@@ -4,6 +4,32 @@ const flash = document.getElementById("flash");
 
 /* AUDIO */
 
+const sonidos = {
+  stressLow: new Audio("sounds/stress_low.mp3"),
+  stressHigh: new Audio("sounds/stress_high.mp3"),
+  stressNoise: new Audio("sounds/stress_noise.mp3"),
+  calmAir: new Audio("sounds/calm_air.mp3"),
+  calmPulse: new Audio("sounds/calm_pulse.mp3")
+};
+
+Object.values(sonidos).forEach(sound => {
+  sound.loop = true;
+  sound.volume = 0;
+});
+
+let audioIniciado = false;
+
+function iniciarAudio() {
+  if (audioIniciado) return;
+  audioIniciado = true;
+
+  Object.values(sonidos).forEach(sound => {
+    sound.play().catch(error => {
+      console.log("No se pudo reproducir:", sound.src, error);
+    });
+  });
+}
+
 /* ESTRÉS */
 
 const stressLow = new Audio("sounds/stress_low.mp3");
