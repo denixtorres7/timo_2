@@ -8,9 +8,9 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:black;
+  background:#000;
   touch-action:none;
-  font-family:sans-serif;
+  font-family:system-ui, Arial, sans-serif;
 }
 
 #scene{
@@ -18,32 +18,91 @@ html,body{
   width:100vw;
   height:100vh;
   overflow:hidden;
+  background:#fff;
 }
 
-#pageImage{
+#background{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
   object-fit:contain;
-  transition:
-    filter 0.3s,
-    transform 0.2s;
+  z-index:1;
+}
+
+.personaje{
+  position:absolute;
+  z-index:4;
+  object-fit:contain;
+  pointer-events:none;
+  transform-origin:center center;
+  will-change:transform, filter, opacity;
+  transition:filter .25s linear, opacity .25s linear;
+}
+
+/* Posiciones ajustadas para las páginas horizontales 2048 x 1039 */
+#timo{ width:19.3vw; left:4.6vw; top:67.3vh; }
+#mono{ width:27.1vw; left:65.9vw; top:4.3vh; }
+#conejo{ width:14.1vw; left:60.5vw; top:54.4vh; }
+#pajaro{ width:7.8vw; left:52.7vw; top:52.7vh; }
+#mariposa{ width:6.8vw; left:73.2vw; top:56.8vh; }
+#pelota{ width:8.1vw; left:66.9vw; top:34.6vh; }
+
+#colorWash{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:radial-gradient(circle at 22% 77%, rgba(255,209,102,.28), transparent 30%),
+             radial-gradient(circle at 75% 40%, rgba(84,122,165,.28), transparent 28%);
+  mix-blend-mode:multiply;
+  opacity:.2;
+  pointer-events:none;
+  transition:opacity .3s linear, filter .3s linear;
 }
 
 #noise{
   position:absolute;
   inset:0;
-  background-image:url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
+  z-index:6;
+  background-image:
+    repeating-radial-gradient(circle, rgba(0,0,0,.08) 0px, rgba(0,0,0,.02) 2px, transparent 4px);
   opacity:0;
-  mix-blend-mode:screen;
   pointer-events:none;
+  mix-blend-mode:multiply;
+  animation:noiseMove .18s infinite;
+}
+
+@keyframes noiseMove{
+  0%{transform:translate(0,0)}
+  25%{transform:translate(-3px,2px)}
+  50%{transform:translate(3px,-2px)}
+  75%{transform:translate(-2px,-1px)}
+  100%{transform:translate(0,0)}
 }
 
 #flash{
   position:absolute;
   inset:0;
-  background:white;
+  z-index:7;
+  background:#fff;
   opacity:0;
   pointer-events:none;
+}
+
+#instruction{
+  position:absolute;
+  z-index:8;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(0,0,0,.72);
+  color:#fff;
+  font-size:clamp(12px, 2.5vw, 16px);
+  text-align:center;
+  max-width:90vw;
+  opacity:.82;
 }
 
 #startButton{
@@ -58,4 +117,5 @@ html,body{
   background:#111;
   color:white;
   font-size:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
 }

@@ -1,249 +1,160 @@
-const pageImage = document.getElementById("pageImage");
+const background = document.getElementById("background");
 const noise = document.getElementById("noise");
 const flash = document.getElementById("flash");
 const startButton = document.getElementById("startButton");
+const instruction = document.getElementById("instruction");
+const colorWash = document.getElementById("colorWash");
 
-let stressLevel = 20;
-
-/* AUDIO */
-
-const sonidos = {
-
-  stressLow:
-    new Audio("sounds/stress_low.mp3"),
-
-  stressHigh:
-    new Audio("sounds/stress_high.mp3"),
-
-  stressNoise:
-    new Audio("sounds/stress_noise.mp3"),
-
-  calmAir:
-    new Audio("sounds/calm_air.mp3"),
-
-  calmPulse:
-    new Audio("sounds/calm_pulse.mp3")
-
+const sprites = {
+  timo: document.getElementById("timo"),
+  mono: document.getElementById("mono"),
+  conejo: document.getElementById("conejo"),
+  pajaro: document.getElementById("pajaro"),
+  mariposa: document.getElementById("mariposa"),
+  pelota: document.getElementById("pelota")
 };
 
-/* CONFIG */
+let stressLevel = 25;
+let audioIniciado = false;
+let experienceStarted = false;
 
-Object.values(sonidos).forEach(sound=>{
+/* AUDIO: si algún archivo falta, la experiencia sigue funcionando */
+const sonidos = {
+  stressLow: new Audio("sounds/stress_low.mp3"),
+  stressHigh: new Audio("sounds/stress_high.mp3"),
+  stressNoise: new Audio("sounds/stress_noise.mp3"),
+  calmAir: new Audio("sounds/calm_air.mp3"),
+  calmPulse: new Audio("sounds/calm_pulse.mp3")
+};
 
+Object.values(sonidos).forEach(sound => {
   sound.loop = true;
   sound.volume = 0;
-
 });
-
-/* CALMA INICIAL */
-
-sonidos.calmAir.volume = 1;
-sonidos.calmPulse.volume = 0.4;
-
-let audioIniciado = false;
-
-/* INICIAR */
 
 function iniciarAudio(){
-
   if(audioIniciado) return;
-
   audioIniciado = true;
 
-  Object.values(sonidos).forEach(sound=>{
-
-    sound.play().catch(error=>{
-
-      console.log("ERROR AUDIO", error);
-
+  Object.values(sonidos).forEach(sound => {
+    sound.play().catch(error => {
+      console.log("Audio no disponible o bloqueado:", sound.src, error);
     });
-
   });
-
-  startButton.style.display = "none";
-
 }
 
-/* BOTÓN */
-
-startButton.addEventListener("click", ()=>{
-
+startButton.addEventListener("click", () => {
+  experienceStarted = true;
   iniciarAudio();
+  startButton.style.display = "none";
   updateStress();
-
 });
 
-/* RESPIRACIÓN */
+/* En computador también funciona */
+window.addEventListener("keydown", (e) => {
+  if(e.key === "ArrowUp") subirEstres();
+  if(e.key === "ArrowDown") regular();
+});
 
-let breathing = 1;
-let breathingDirection = 0.002;
+/* TOQUE: insistir/golpear aumenta desregulación */
+window.addEventListener("touchstart", () => {
+  if(!experienceStarted) return;
+  subirEstres();
+});
 
-function animate(){
+window.addEventListener("click", () => {
+  if(!experienceStarted) return;
+  subirEstres();
+});
 
-  breathing += breathingDirection;
+/* DESLIZAR: regula el entorno */
+window.addEventListener("touchmove", (event) => {
+  if(!experienceStarted) return;
+  event.preventDefault();
+  regular();
+}, {passive:false});
 
-  if(breathing > 1.02 || breathing < 0.98){
-
-    breathingDirection *= -1;
-
-  }
-
-  pageImage.style.transform = `
-
-    scale(${breathing})
-
-    translate(
-      ${Math.random()*stressLevel/12}px,
-      ${Math.random()*stressLevel/12}px
-    )
-
-  `;
-
-  requestAnimationFrame(animate);
-
-}
-
-animate();
-
-/* TOQUE */
-
-window.addEventListener("touchstart", ()=>{
-
-  if(!audioIniciado) return;
-
-  stressLevel += 12;
-
-  if(stressLevel > 100){
-
-    stressLevel = 100;
-
-  }
+function subirEstres(){
+  stressLevel += 14;
+  if(stressLevel > 100) stressLevel = 100;
 
   if(navigator.vibrate){
+    navigator.vibrate([90, 35, 110]);
+  }
 
-    navigator.vibrate([80,30,100]);
-
+  if(stressLevel > 62){
+    flash.style.opacity = 0.14;
+    setTimeout(() => flash.style.opacity = 0, 100);
   }
 
   updateStress();
+}
 
-});
-
-/* MOUSE */
-
-window.addEventListener("click", ()=>{
-
-  if(!audioIniciado) return;
-
-  stressLevel += 12;
-
-  if(stressLevel > 100){
-
-    stressLevel = 100;
-
-  }
-
+function regular(){
+  stressLevel -= 2.4;
+  if(stressLevel < 0) stressLevel = 0;
   updateStress();
+}
 
-});
+/* Animación constante de personajes */
+let t = 0;
+function animate(){
+  t += 0.035;
 
-/* REGULACIÓN */
+  const s = stressLevel / 100;
+  const calm = 1 - s;
 
-window.addEventListener("touchmove", ()=>{
+  // Timo: con estrés se retrae; con calma respira y mira
+  const timoBreath = Math.sin(t * (1.2 + s * 4)) * (2 + calm * 4);
+  sprites.timo.style.transform = `translate(${ -s*16 + timoBreath*.25 }px, ${s*10 + timoBreath}px) scale(${1 - s*.10}) rotate(${-s*5}deg)`;
 
-  if(!audioIniciado) return;
+  // Mono: el entorno invasivo se vuelve más errático
+  sprites.mono.style.transform = `translate(${Math.sin(t*3.2)*s*18}px, ${Math.cos(t*2.7)*s*16}px) rotate(${Math.sin(t*4)*s*8}deg) scale(${1 + s*.04})`;
 
-  stressLevel -= 1.5;
+  // Conejo: tiembla cuando hay mucha estimulación
+  sprites.conejo.style.transform = `translate(${Math.sin(t*8)*s*10}px, ${Math.cos(t*7)*s*9}px) rotate(${Math.sin(t*7)*s*5}deg)`;
 
-  if(stressLevel < 0){
+  // Pájaro y mariposa: estímulos flotantes
+  sprites.pajaro.style.transform = `translate(${Math.sin(t*2.5)*12 + s*18}px, ${Math.cos(t*2.1)*8 - s*12}px) rotate(${Math.sin(t*3)*10}deg)`;
+  sprites.mariposa.style.transform = `translate(${Math.cos(t*3.4)*10 + s*16}px, ${Math.sin(t*2.9)*10}px) scale(${1 + Math.sin(t*4)*.04})`;
 
-    stressLevel = 0;
+  // Pelota: estímulo/impacto más fuerte cuando hay estrés
+  sprites.pelota.style.transform = `translate(${Math.sin(t*5)*s*22}px, ${Math.cos(t*4)*s*18}px) scale(${1 + s*.12})`;
 
-  }
-
-  updateStress();
-
-});
-
-/* VISUAL + SONIDO */
+  requestAnimationFrame(animate);
+}
+animate();
 
 function updateStress(){
+  const s = stressLevel / 100;
 
-  /* IMAGEN */
+  // Fondo quieto: solo cambia el clima visual, no se mueve
+  background.style.filter = `brightness(${106 - stressLevel*.33}%) contrast(${100 + stressLevel*.25}%)`;
 
-  pageImage.style.filter = `
+  // Personajes: filtros compartidos
+  Object.values(sprites).forEach(el => {
+    el.style.filter = `blur(${stressLevel*.018}px) contrast(${100 + stressLevel*.45}%)`;
+  });
 
-    blur(${stressLevel * 0.05}px)
+  noise.style.opacity = s*.9;
+  colorWash.style.opacity = 0.16 + (1-s)*0.34;
+  colorWash.style.filter = `saturate(${80 + (1-s)*80}%)`;
 
-    brightness(${100 - stressLevel * 0.25}%)
-
-    saturate(${100 + stressLevel * 0.8}%)
-
-    contrast(${100 + stressLevel * 0.3}%)
-
-  `;
-
-  /* RUIDO */
-
-  noise.style.opacity = stressLevel / 100;
-
-  /* SONIDOS */
-
-  sonidos.stressLow.volume =
-    stressLevel / 100;
-
-  sonidos.stressHigh.volume =
-    Math.max(0,(stressLevel - 30)/100);
-
-  sonidos.stressNoise.volume =
-    Math.max(0,(stressLevel - 50)/100);
-
-  sonidos.calmAir.volume =
-    1 - (stressLevel/100);
-
-  sonidos.calmPulse.volume =
-    Math.max(0,0.6 - (stressLevel/160));
-
-  /* FLASH */
-
-  if(stressLevel > 65){
-
-    flash.style.opacity = 0.12;
-
-    setTimeout(()=>{
-
-      flash.style.opacity = 0;
-
-    },120);
-
+  if(audioIniciado){
+    sonidos.stressLow.volume = Math.min(1, stressLevel / 100);
+    sonidos.stressHigh.volume = Math.max(0, (stressLevel - 30) / 100);
+    sonidos.stressNoise.volume = Math.max(0, (stressLevel - 50) / 100);
+    sonidos.calmAir.volume = Math.max(0, 1 - stressLevel / 100);
+    sonidos.calmPulse.volume = Math.max(0, 0.55 - stressLevel / 160);
   }
 
-  /* ESCENAS */
-
-  if(stressLevel > 75){
-
-    pageImage.src = "assets/DP_03.png";
-
+  if(stressLevel > 70){
+    instruction.textContent = "Demasiado estímulo. Desliza lento para bajar la intensidad.";
+  } else if(stressLevel > 35){
+    instruction.textContent = "El entorno empieza a regularse. Sigue deslizando suavemente.";
+  } else {
+    instruction.textContent = "Cuando el entorno baja su intensidad, Timo puede acercarse.";
   }
-
-  else if(stressLevel > 45){
-
-    pageImage.src = "assets/DP_02.png";
-
-  }
-
-  else if(stressLevel > 20){
-
-    pageImage.src = "assets/DP_01.png";
-
-  }
-
-  else{
-
-    pageImage.src = "assets/DP_08.png";
-
-  }
-
 }
 
 updateStress();

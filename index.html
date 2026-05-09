@@ -2,29 +2,32 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Timo Interactivo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Timo Interactivo - capas</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <button id="startButton">Iniciar experiencia</button>
 
-<button id="startButton">
-  Iniciar experiencia
-</button>
+  <div id="scene">
+    <img id="background" src="assets/fondo_DP_01.png" alt="Escena del libro">
 
-<div id="scene">
+    <img class="personaje" id="timo" src="assets/timo.png" alt="Timo">
+    <img class="personaje" id="mono" src="assets/mono.png" alt="Mono">
+    <img class="personaje" id="conejo" src="assets/conejo.png" alt="Conejo">
+    <img class="personaje" id="pajaro" src="assets/pajaro.png" alt="Pájaro">
+    <img class="personaje" id="mariposa" src="assets/mariposa.png" alt="Mariposa">
+    <img class="personaje" id="pelota" src="assets/pelota.png" alt="Pelota">
 
-  <img
-    id="pageImage"
-    src="assets/DP_01.png"
-  >
+    <div id="colorWash"></div>
+    <div id="noise"></div>
+    <div id="flash"></div>
 
-  <div id="noise"></div>
-  <div id="flash"></div>
+    <div id="instruction">
+      Toca para insistir. Desliza lentamente para regular el entorno.
+    </div>
+  </div>
 
-</div>
-
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 </body>
 </html>
