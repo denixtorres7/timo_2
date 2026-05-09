@@ -136,6 +136,24 @@ calmSound.volume = 1 - (stressLevel / 100);
 
   noise.style.opacity = stressLevel / 100;
 
+  /* AUDIO SENSORIAL */
+
+stressLow.volume = stressLevel / 100;
+
+stressHigh.volume =
+  Math.max(0, (stressLevel - 30) / 100);
+
+stressNoise.volume =
+  Math.max(0, (stressLevel - 50) / 100);
+
+/* CALMA */
+
+calmAir.volume =
+  1 - (stressLevel / 100);
+
+calmPulse.volume =
+  0.6 - (stressLevel / 160);
+
   /* FLASH SENSORIAL */
 
   if(stressLevel > 65){
