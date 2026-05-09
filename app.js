@@ -2,6 +2,8 @@ const pageImage = document.getElementById("pageImage");
 const noise = document.getElementById("noise");
 const flash = document.getElementById("flash");
 
+let stressLevel = 20;
+
 /* AUDIO */
 
 const sonidos = {
@@ -30,189 +32,99 @@ function iniciarAudio() {
   });
 }
 
-/* ESTRÉS */
-
-const stressLow = new Audio("sounds/stress_low.mp3");
-const stressHigh = new Audio("sounds/stress_high.mp3");
-const stressNoise = new Audio("sounds/stress_noise.mp3");
-
-/* CALMA */
-
-const calmAir = new Audio("sounds/calm_air.mp3");
-const calmPulse = new Audio("sounds/calm_pulse.mp3");
-
-/* LOOP */
-
-[
-  stressLow,
-  stressHigh,
-  stressNoise,
-  calmAir,
-  calmPulse
-].forEach(sound => {
-
-  sound.loop = true;
-
-});
-
-/* VOLUMEN INICIAL */
-
-stressLow.volume = 0;
-stressHigh.volume = 0;
-stressNoise.volume = 0;
-
-calmAir.volume = 1;
-calmPulse.volume = 0.5;
-
-/* INICIAR */
-
-window.addEventListener("touchstart", ()=>{
-
-  stressLow.play();
-  stressHigh.play();
-  stressNoise.play();
-
-  calmAir.play();
-  calmPulse.play();
-
-},{ once:true });
+/* RESPIRACIÓN */
 
 let breathing = 1;
 let breathingDirection = 0.002;
 
-/* RESPIRACIÓN */
-
-function animate(){
-
+function animate() {
   breathing += breathingDirection;
 
-  if(breathing > 1.02 || breathing < 0.98){
+  if (breathing > 1.02 || breathing < 0.98) {
     breathingDirection *= -1;
   }
 
-  pageImage.style.transform =
-    `
+  pageImage.style.transform = `
     scale(${breathing})
     translate(
-      ${Math.random()*stressLevel/12}px,
-      ${Math.random()*stressLevel/12}px
+      ${Math.random() * stressLevel / 12}px,
+      ${Math.random() * stressLevel / 12}px
     )
-    `;
+  `;
 
   requestAnimationFrame(animate);
 }
 
 animate();
 
-/* TOQUE */
+/* TOQUE: aumenta estrés */
 
-window.addEventListener("touchstart", ()=>{
+window.addEventListener("touchstart", () => {
+  iniciarAudio();
 
   stressLevel += 12;
 
-  if(stressLevel > 100){
+  if (stressLevel > 100) {
     stressLevel = 100;
   }
 
-  /* vibración celular */
-
-  if(navigator.vibrate){
-    navigator.vibrate([80,30,100]);
+  if (navigator.vibrate) {
+    navigator.vibrate([80, 30, 100]);
   }
 
   updateStress();
-
 });
 
-/* SCROLL REGULADOR */
+/* DESLIZAR: regula */
 
-window.addEventListener("touchmove", ()=>{
-
+window.addEventListener("touchmove", () => {
   stressLevel -= 1.5;
 
-  if(stressLevel < 0){
+  if (stressLevel < 0) {
     stressLevel = 0;
   }
 
   updateStress();
-
 });
 
-/* ESTADO VISUAL */
+/* ESTADO VISUAL Y SONORO */
 
-function updateStress(){
-
-  /* SONIDO */
-
-stressSound.volume = stressLevel / 100;
-
-calmSound.volume = 1 - (stressLevel / 100);
-
-  /* DISTORSIÓN */
-
-  pageImage.style.filter =
-    `
+function updateStress() {
+  pageImage.style.filter = `
     blur(${stressLevel * 0.05}px)
     brightness(${100 - stressLevel * 0.25}%)
     saturate(${100 + stressLevel * 0.8}%)
     contrast(${100 + stressLevel * 0.3}%)
-    `;
-
-  /* RUIDO */
+  `;
 
   noise.style.opacity = stressLevel / 100;
 
-  /* AUDIO SENSORIAL */
+  if (audioIniciado) {
+    sonidos.stressLow.volume = stressLevel / 100;
+    sonidos.stressHigh.volume = Math.max(0, (stressLevel - 30) / 100);
+    sonidos.stressNoise.volume = Math.max(0, (stressLevel - 50) / 100);
 
-stressLow.volume = stressLevel / 100;
+    sonidos.calmAir.volume = 1 - stressLevel / 100;
+    sonidos.calmPulse.volume = Math.max(0, 0.6 - stressLevel / 160);
+  }
 
-stressHigh.volume =
-  Math.max(0, (stressLevel - 30) / 100);
-
-stressNoise.volume =
-  Math.max(0, (stressLevel - 50) / 100);
-
-/* CALMA */
-
-calmAir.volume =
-  1 - (stressLevel / 100);
-
-calmPulse.volume =
-  0.6 - (stressLevel / 160);
-
-  /* FLASH SENSORIAL */
-
-  if(stressLevel > 65){
-
+  if (stressLevel > 65) {
     flash.style.opacity = 0.12;
 
-    setTimeout(()=>{
+    setTimeout(() => {
       flash.style.opacity = 0;
-    },120);
-
+    }, 120);
   }
 
-  /* ESCENAS */
-
-  if(stressLevel > 75){
-
+  if (stressLevel > 75) {
     pageImage.src = "assets/DP_03.png";
-
-  }
-  else if(stressLevel > 45){
-
+  } else if (stressLevel > 45) {
     pageImage.src = "assets/DP_02.png";
-
-  }
-  else if(stressLevel > 20){
-
+  } else if (stressLevel > 20) {
     pageImage.src = "assets/DP_01.png";
-
-  }
-  else{
-
+  } else {
     pageImage.src = "assets/DP_08.png";
-
   }
-
 }
+
+updateStress();
