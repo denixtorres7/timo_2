@@ -80,6 +80,12 @@ window.addEventListener("touchmove", ()=>{
 
 function updateStress(){
 
+  /* SONIDO */
+
+stressSound.volume = stressLevel / 100;
+
+calmSound.volume = 1 - (stressLevel / 100);
+
   /* DISTORSIÓN */
 
   pageImage.style.filter =
