@@ -1,0 +1,105 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  overflow:hidden;
+  background:black;
+  font-family:Arial, sans-serif;
+}
+
+#scene{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+}
+
+#pageImage{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+
+  transition:
+    filter 0.5s ease,
+    transform 0.2s ease;
+}
+
+/* RUIDO SENSORIAL */
+
+#noise{
+  position:absolute;
+  inset:0;
+
+  background-image:
+    repeating-radial-gradient(
+      circle,
+      rgba(255,255,255,0.05) 0px,
+      rgba(255,255,255,0.02) 2px,
+      transparent 4px
+    );
+
+  mix-blend-mode:overlay;
+
+  opacity:0.2;
+
+  pointer-events:none;
+
+  animation:noiseMove 0.2s infinite;
+}
+
+@keyframes noiseMove{
+  0%{
+    transform:translate(0,0);
+  }
+
+  25%{
+    transform:translate(-3px,2px);
+  }
+
+  50%{
+    transform:translate(3px,-2px);
+  }
+
+  75%{
+    transform:translate(-2px,-1px);
+  }
+
+  100%{
+    transform:translate(0,0);
+  }
+}
+
+/* FLASH */
+
+#flash{
+  position:absolute;
+  inset:0;
+
+  background:white;
+
+  opacity:0;
+
+  pointer-events:none;
+
+  transition:opacity 0.2s;
+}
+
+/* TEXTO */
+
+#message{
+  position:absolute;
+
+  bottom:40px;
+  width:100%;
+
+  text-align:center;
+
+  color:white;
+
+  font-size:1rem;
+
+  opacity:0.7;
+}
