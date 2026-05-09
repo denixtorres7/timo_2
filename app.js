@@ -2,27 +2,60 @@ const pageImage = document.getElementById("pageImage");
 const noise = document.getElementById("noise");
 const flash = document.getElementById("flash");
 
-let stressLevel = 0;
+let stressLevel = 20;
+
+let breathing = 1;
+let breathingDirection = 0.002;
+
+/* RESPIRACIÓN */
+
+function animate(){
+
+  breathing += breathingDirection;
+
+  if(breathing > 1.02 || breathing < 0.98){
+    breathingDirection *= -1;
+  }
+
+  pageImage.style.transform =
+    `
+    scale(${breathing})
+    translate(
+      ${Math.random()*stressLevel/12}px,
+      ${Math.random()*stressLevel/12}px
+    )
+    `;
+
+  requestAnimationFrame(animate);
+}
+
+animate();
 
 /* TOQUE */
 
 window.addEventListener("touchstart", ()=>{
 
-  stressLevel += 10;
+  stressLevel += 12;
 
   if(stressLevel > 100){
     stressLevel = 100;
+  }
+
+  /* vibración celular */
+
+  if(navigator.vibrate){
+    navigator.vibrate([80,30,100]);
   }
 
   updateStress();
 
 });
 
-/* SCROLL / REGULACIÓN */
+/* SCROLL REGULADOR */
 
 window.addEventListener("touchmove", ()=>{
 
-  stressLevel -= 2;
+  stressLevel -= 1.5;
 
   if(stressLevel < 0){
     stressLevel = 0;
@@ -32,49 +65,51 @@ window.addEventListener("touchmove", ()=>{
 
 });
 
-/* ACTUALIZAR ESTADO */
+/* ESTADO VISUAL */
 
 function updateStress(){
 
-  /* BLUR */
+  /* DISTORSIÓN */
 
   pageImage.style.filter =
-    `blur(${stressLevel * 0.08}px)
-     brightness(${100 - stressLevel * 0.3}%)
-     saturate(${100 + stressLevel}%)`;
-
-  /* MOVIMIENTO */
-
-  pageImage.style.transform =
-    `translate(${Math.random()*stressLevel/5}px,
-               ${Math.random()*stressLevel/5}px)`;
+    `
+    blur(${stressLevel * 0.05}px)
+    brightness(${100 - stressLevel * 0.25}%)
+    saturate(${100 + stressLevel * 0.8}%)
+    contrast(${100 + stressLevel * 0.3}%)
+    `;
 
   /* RUIDO */
 
   noise.style.opacity = stressLevel / 100;
 
-  /* FLASH */
+  /* FLASH SENSORIAL */
 
-  if(stressLevel > 60){
+  if(stressLevel > 65){
 
-    flash.style.opacity = 0.15;
+    flash.style.opacity = 0.12;
 
     setTimeout(()=>{
       flash.style.opacity = 0;
-    },100);
+    },120);
 
   }
 
-  /* CAMBIO DE ESCENA */
+  /* ESCENAS */
 
-  if(stressLevel > 70){
+  if(stressLevel > 75){
 
     pageImage.src = "assets/DP_03.png";
 
   }
-  else if(stressLevel > 30){
+  else if(stressLevel > 45){
 
     pageImage.src = "assets/DP_02.png";
+
+  }
+  else if(stressLevel > 20){
+
+    pageImage.src = "assets/DP_01.png";
 
   }
   else{
