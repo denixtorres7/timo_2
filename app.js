@@ -1,6 +1,17 @@
 const pageImage = document.getElementById("pageImage");
 const noise = document.getElementById("noise");
 const flash = document.getElementById("flash");
+const stressSound = new Audio("sounds/stress.mp3");
+const calmSound = new Audio("sounds/calm.mp3");
+
+stressSound.loop = true;
+calmSound.loop = true;
+
+stressSound.volume = 0;
+calmSound.volume = 1;
+
+stressSound.play();
+calmSound.play();
 
 let stressLevel = 20;
 
