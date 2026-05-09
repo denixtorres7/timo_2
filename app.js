@@ -1,19 +1,55 @@
 const pageImage = document.getElementById("pageImage");
 const noise = document.getElementById("noise");
 const flash = document.getElementById("flash");
-const stressSound = new Audio("sounds/stress.mp3");
-const calmSound = new Audio("sounds/calm.mp3");
 
-stressSound.loop = true;
-calmSound.loop = true;
+/* AUDIO */
 
-stressSound.volume = 0;
-calmSound.volume = 1;
+/* ESTRÉS */
 
-stressSound.play();
-calmSound.play();
+const stressLow = new Audio("sounds/stress_low.mp3");
+const stressHigh = new Audio("sounds/stress_high.mp3");
+const stressNoise = new Audio("sounds/stress_noise.mp3");
 
-let stressLevel = 20;
+/* CALMA */
+
+const calmAir = new Audio("sounds/calm_air.mp3");
+const calmPulse = new Audio("sounds/calm_pulse.mp3");
+
+/* LOOP */
+
+[
+  stressLow,
+  stressHigh,
+  stressNoise,
+  calmAir,
+  calmPulse
+].forEach(sound => {
+
+  sound.loop = true;
+
+});
+
+/* VOLUMEN INICIAL */
+
+stressLow.volume = 0;
+stressHigh.volume = 0;
+stressNoise.volume = 0;
+
+calmAir.volume = 1;
+calmPulse.volume = 0.5;
+
+/* INICIAR */
+
+window.addEventListener("touchstart", ()=>{
+
+  stressLow.play();
+  stressHigh.play();
+  stressNoise.play();
+
+  calmAir.play();
+  calmPulse.play();
+
+},{ once:true });
 
 let breathing = 1;
 let breathingDirection = 0.002;
