@@ -8,114 +8,172 @@ html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  background:#000;
+  background:black;
+  font-family:Arial, sans-serif;
   touch-action:none;
-  font-family:system-ui, Arial, sans-serif;
 }
 
-#scene{
+#app{
   position:relative;
   width:100vw;
   height:100vh;
   overflow:hidden;
-  background:#fff;
 }
 
-#background{
+#fondo{
   position:absolute;
   inset:0;
   width:100%;
   height:100%;
-  object-fit:contain;
+  object-fit:cover;
   z-index:1;
 }
 
-.personaje{
-  position:absolute;
-  z-index:4;
-  object-fit:contain;
-  pointer-events:none;
-  transform-origin:center center;
-  will-change:transform, filter, opacity;
-  transition:filter .25s linear, opacity .25s linear;
-}
-
-/* Posiciones ajustadas para las páginas horizontales 2048 x 1039 */
-#timo{ width:19.3vw; left:4.6vw; top:67.3vh; }
-#mono{ width:27.1vw; left:65.9vw; top:4.3vh; }
-#conejo{ width:14.1vw; left:60.5vw; top:54.4vh; }
-#pajaro{ width:7.8vw; left:52.7vw; top:52.7vh; }
-#mariposa{ width:6.8vw; left:73.2vw; top:56.8vh; }
-#pelota{ width:8.1vw; left:66.9vw; top:34.6vh; }
-
-#colorWash{
+#oscuridad{
   position:absolute;
   inset:0;
-  z-index:2;
-  background:radial-gradient(circle at 22% 77%, rgba(255,209,102,.28), transparent 30%),
-             radial-gradient(circle at 75% 40%, rgba(84,122,165,.28), transparent 28%);
-  mix-blend-mode:multiply;
-  opacity:.2;
-  pointer-events:none;
-  transition:opacity .3s linear, filter .3s linear;
-}
-
-#noise{
-  position:absolute;
-  inset:0;
-  z-index:6;
-  background-image:
-    repeating-radial-gradient(circle, rgba(0,0,0,.08) 0px, rgba(0,0,0,.02) 2px, transparent 4px);
+  background:black;
   opacity:0;
+  z-index:2;
   pointer-events:none;
-  mix-blend-mode:multiply;
-  animation:noiseMove .18s infinite;
 }
 
-@keyframes noiseMove{
-  0%{transform:translate(0,0)}
-  25%{transform:translate(-3px,2px)}
-  50%{transform:translate(3px,-2px)}
-  75%{transform:translate(-2px,-1px)}
-  100%{transform:translate(0,0)}
+#ruido{
+  position:absolute;
+  inset:0;
+  background:
+    repeating-radial-gradient(circle, rgba(255,255,255,.08) 0px, transparent 3px),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.04) 0px, transparent 4px);
+  opacity:0;
+  mix-blend-mode:screen;
+  animation:ruido 0.18s infinite;
+  z-index:3;
+  pointer-events:none;
+}
+
+@keyframes ruido{
+  0%{transform:translate(0,0);}
+  50%{transform:translate(3px,-2px);}
+  100%{transform:translate(-2px,2px);}
 }
 
 #flash{
   position:absolute;
   inset:0;
-  z-index:7;
-  background:#fff;
+  background:white;
   opacity:0;
+  z-index:20;
   pointer-events:none;
 }
 
-#instruction{
+.personaje{
   position:absolute;
-  z-index:8;
+  z-index:5;
+  max-width:35vw;
+  transition:all .4s ease;
+  filter:drop-shadow(0 4px 10px rgba(0,0,0,.2));
+}
+
+.oculto{
+  display:none;
+}
+
+#texto{
+  position:absolute;
+  top:6%;
+  left:50%;
+  transform:translateX(-50%);
+  width:88%;
+  text-align:center;
+  color:white;
+  z-index:10;
+  text-shadow:0 3px 12px rgba(0,0,0,.9);
+}
+
+#titulo{
+  font-size:clamp(24px,4vw,46px);
+  margin-bottom:8px;
+}
+
+#instruccion{
+  font-size:clamp(18px,2.5vw,28px);
+  font-weight:bold;
+}
+
+#cuento{
+  margin:12px auto 0;
+  max-width:720px;
+  font-size:clamp(15px,2vw,22px);
+  line-height:1.35;
+  background:rgba(0,0,0,.35);
+  padding:10px 16px;
+  border-radius:18px;
+}
+
+#menu{
+  position:absolute;
   left:50%;
   bottom:18px;
   transform:translateX(-50%);
-  padding:10px 16px;
-  border-radius:999px;
-  background:rgba(0,0,0,.72);
-  color:#fff;
-  font-size:clamp(12px, 2.5vw, 16px);
-  text-align:center;
-  max-width:90vw;
-  opacity:.82;
+  z-index:12;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  justify-content:center;
 }
 
-#startButton{
-  position:fixed;
-  z-index:9999;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  padding:18px 28px;
+button{
   border:none;
-  border-radius:30px;
-  background:#111;
-  color:white;
-  font-size:18px;
-  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  border-radius:22px;
+  padding:12px 18px;
+  background:rgba(255,255,255,.92);
+  color:#222;
+  font-size:clamp(13px,2vw,18px);
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+
+.temblar{
+  animation:temblar .12s infinite;
+}
+
+@keyframes temblar{
+  0%{transform:translate(-50%,-50%) rotate(-2deg);}
+  50%{transform:translate(calc(-50% + 5px),calc(-50% - 3px)) rotate(2deg);}
+  100%{transform:translate(calc(-50% - 4px),calc(-50% + 3px)) rotate(-1deg);}
+}
+
+.rodarFuera{
+  animation:rodarFuera 1.3s forwards ease-in;
+}
+
+@keyframes rodarFuera{
+  from{left:18%; transform:translate(-50%,-50%) rotate(0deg);}
+  to{left:115%; transform:translate(-50%,-50%) rotate(720deg);}
+}
+
+.volver{
+  animation:volver 1.6s forwards ease-out;
+}
+
+@keyframes volver{
+  from{left:-20%; transform:translate(-50%,-50%) rotate(-720deg);}
+  to{left:35%; transform:translate(-50%,-50%) rotate(0deg);}
+}
+
+.respirar{
+  animation:respirar 3.5s infinite ease-in-out;
+}
+
+@keyframes respirar{
+  0%,100%{transform:translate(-50%,-50%) scale(.9);}
+  50%{transform:translate(-50%,-50%) scale(1.08);}
+}
+
+.flotar{
+  animation:flotar 3s infinite ease-in-out;
+}
+
+@keyframes flotar{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-18px);}
 }
