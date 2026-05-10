@@ -80,7 +80,7 @@ html,body{
 
 #texto{
   position:absolute;
-  top:6%;
+  top:5%;
   left:50%;
   transform:translateX(-50%);
   width:88%;
@@ -91,19 +91,19 @@ html,body{
 }
 
 #titulo{
-  font-size:clamp(24px,4vw,46px);
-  margin-bottom:8px;
+  font-size:clamp(22px,4vw,44px);
+  margin-bottom:6px;
 }
 
 #instruccion{
-  font-size:clamp(18px,2.5vw,28px);
+  font-size:clamp(17px,2.5vw,26px);
   font-weight:bold;
 }
 
 #cuento{
-  margin:12px auto 0;
+  margin:10px auto 0;
   max-width:720px;
-  font-size:clamp(15px,2vw,22px);
+  font-size:clamp(14px,2vw,21px);
   line-height:1.35;
   background:rgba(0,0,0,.35);
   padding:10px 16px;
@@ -113,23 +113,80 @@ html,body{
 #menu{
   position:absolute;
   left:50%;
-  bottom:18px;
+  bottom:12px;
   transform:translateX(-50%);
   z-index:12;
   display:flex;
-  flex-wrap:wrap;
   gap:10px;
   justify-content:center;
+  align-items:center;
 }
 
-button{
+#menu button{
+  position:relative;
+  width:56px;
+  height:56px;
   border:none;
-  border-radius:22px;
-  padding:12px 18px;
-  background:rgba(255,255,255,.92);
-  color:#222;
-  font-size:clamp(13px,2vw,18px);
-  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  border-radius:50%;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(8px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  transition:.25s;
+}
+
+#menu button:hover{
+  transform:translateY(-3px) scale(1.05);
+  box-shadow:0 0 18px rgba(255,230,120,.45);
+}
+
+#menu button::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  bottom:118%;
+  left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:rgba(0,0,0,.82);
+  color:white;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+}
+
+#menu button:hover::after{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+#menu svg{
+  width:34px;
+  height:34px;
+}
+
+#menu svg circle:first-child{
+  fill:white;
+  fill-opacity:.75;
+  stroke:none;
+}
+
+#menu svg path,
+#menu svg circle:not(:first-child){
+  fill:none;
+  stroke:#222;
+  stroke-width:5;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+#menu svg .luz{
+  fill:#FFD966;
+  stroke:none;
 }
 
 .temblar{
@@ -176,4 +233,31 @@ button{
 @keyframes flotar{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(-18px);}
+}
+
+@media (max-width:600px){
+  #menu{
+    bottom:8px;
+    gap:7px;
+  }
+
+  #menu button{
+    width:46px;
+    height:46px;
+  }
+
+  #menu svg{
+    width:28px;
+    height:28px;
+  }
+
+  #cuento{
+    font-size:13px;
+    max-height:70px;
+    overflow:auto;
+  }
+
+  #texto{
+    top:4%;
+  }
 }
