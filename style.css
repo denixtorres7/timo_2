@@ -66,6 +66,43 @@ html,body{
   pointer-events:none;
 }
 
+/* LUCIÉRNAGAS */
+
+#luciernagas{
+  position:absolute;
+  inset:0;
+  z-index:4;
+  pointer-events:none;
+  opacity:.25;
+  transition:opacity .25s ease;
+}
+
+.luciernaga{
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#ffe88a;
+  box-shadow:
+    0 0 10px #ffe88a,
+    0 0 24px rgba(255,232,138,.7),
+    0 0 46px rgba(255,232,138,.35);
+  opacity:.25;
+  animation:flotarLuz 4s infinite ease-in-out;
+}
+
+@keyframes flotarLuz{
+  0%,100%{
+    transform:translateY(0) scale(.8);
+    opacity:.25;
+  }
+
+  50%{
+    transform:translateY(-24px) scale(1.35);
+    opacity:.9;
+  }
+}
+
 .personaje{
   position:absolute;
   z-index:5;
@@ -112,7 +149,7 @@ html,body{
   border-radius:18px;
 }
 
-/* MENÚ RESPONSIVE */
+/* MENÚ */
 
 #menu{
   position:fixed;
