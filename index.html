@@ -1,33 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Timo Interactivo - capas</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timo interactivo</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <button id="startButton">Iniciar experiencia</button>
 
-  <div id="scene">
-    <img id="background" src="assets/fondo_DP_01.png" alt="Escena del libro">
+<div id="app">
 
-    <img class="personaje" id="timo" src="assets/timo.png" alt="Timo">
-    <img class="personaje" id="mono" src="assets/mono.png" alt="Mono">
-    <img class="personaje" id="conejo" src="assets/conejo.png" alt="Conejo">
-    <img class="personaje" id="pajaro" src="assets/pajaro.png" alt="Pájaro">
-    <img class="personaje" id="mariposa" src="assets/mariposa.png" alt="Mariposa">
-    <img class="personaje" id="pelota" src="assets/pelota.png" alt="Pelota">
+  <img id="fondo" src="" alt="Fondo de escena" />
 
-    <div id="colorWash"></div>
-    <div id="noise"></div>
-    <div id="flash"></div>
+  <div id="oscuridad"></div>
+  <div id="ruido"></div>
+  <div id="flash"></div>
 
-    <div id="instruction">
-      Toca para insistir. Desliza lentamente para regular el entorno.
-    </div>
-  </div>
+  <img id="timo" class="personaje" src="" alt="Timo" />
+  <img id="pelota" class="personaje oculto" src="" alt="Pelota" />
+  <img id="mono" class="personaje oculto" src="" alt="Mono" />
+  <img id="conejo" class="personaje oculto" src="" alt="Conejo" />
+  <img id="pajaro" class="personaje oculto" src="" alt="Pájaro" />
+  <img id="mariposa" class="personaje oculto" src="" alt="Mariposa" />
 
-  <script src="app.js"></script>
+  <section id="texto">
+    <h1 id="titulo"></h1>
+    <p id="instruccion"></p>
+    <p id="cuento"></p>
+  </section>
+
+  <nav id="menu">
+    <button onclick="cargarEscena('portada')">🏠 Portada</button>
+    <button onclick="cargarEscena('tunel')">🕳️ Túnel</button>
+    <button onclick="cargarEscena('respiracion')">🌬️ Respirar</button>
+    <button onclick="cargarEscena('final')">✨ Final</button>
+    <button id="btnSonido">🔊 Sonido</button>
+  </nav>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
