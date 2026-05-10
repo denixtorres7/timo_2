@@ -78,12 +78,14 @@ html,body{
   display:none;
 }
 
+/* TEXTO */
+
 #texto{
   position:absolute;
   top:5%;
   left:50%;
   transform:translateX(-50%);
-  width:88%;
+  width:86%;
   text-align:center;
   color:white;
   z-index:10;
@@ -110,22 +112,23 @@ html,body{
   border-radius:18px;
 }
 
+/* MENÚ RESPONSIVE */
+
 #menu{
-  position:absolute;
-  left:50%;
-  bottom:12px;
-  transform:translateX(-50%);
-  z-index:12;
+  position:fixed;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:30;
   display:flex;
-  gap:10px;
-  justify-content:center;
-  align-items:center;
+  flex-direction:column;
+  gap:8px;
 }
 
 #menu button{
   position:relative;
-  width:56px;
-  height:56px;
+  width:46px;
+  height:46px;
   border:none;
   border-radius:50%;
   background:rgba(255,255,255,.86);
@@ -138,35 +141,13 @@ html,body{
 }
 
 #menu button:hover{
-  transform:translateY(-3px) scale(1.05);
+  transform:scale(1.06);
   box-shadow:0 0 18px rgba(255,230,120,.45);
 }
 
-#menu button::after{
-  content:attr(data-tooltip);
-  position:absolute;
-  bottom:118%;
-  left:50%;
-  transform:translateX(-50%) translateY(8px);
-  background:rgba(0,0,0,.82);
-  color:white;
-  padding:6px 10px;
-  border-radius:10px;
-  font-size:12px;
-  white-space:nowrap;
-  opacity:0;
-  pointer-events:none;
-  transition:.25s;
-}
-
-#menu button:hover::after{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-
 #menu svg{
-  width:34px;
-  height:34px;
+  width:27px;
+  height:27px;
 }
 
 #menu svg circle:first-child{
@@ -188,6 +169,29 @@ html,body{
   fill:#FFD966;
   stroke:none;
 }
+
+#menu button::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  right:115%;
+  top:50%;
+  transform:translateY(-50%);
+  background:rgba(0,0,0,.82);
+  color:white;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+}
+
+#menu button:hover::after{
+  opacity:1;
+}
+
+/* ANIMACIONES */
 
 .temblar{
   animation:temblar .12s infinite;
@@ -235,20 +239,36 @@ html,body{
   50%{transform:translateY(-18px);}
 }
 
-@media (max-width:600px){
+/* CELULAR VERTICAL */
+
+@media (orientation: portrait){
   #menu{
-    bottom:8px;
+    right:auto;
+    top:auto;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    flex-direction:row;
     gap:7px;
   }
 
   #menu button{
-    width:46px;
-    height:46px;
+    width:42px;
+    height:42px;
   }
 
   #menu svg{
-    width:28px;
-    height:28px;
+    width:25px;
+    height:25px;
+  }
+
+  #menu button::after{
+    display:none;
+  }
+
+  #texto{
+    top:4%;
+    width:82%;
   }
 
   #cuento{
@@ -256,8 +276,45 @@ html,body{
     max-height:70px;
     overflow:auto;
   }
+}
+
+/* CELULAR HORIZONTAL */
+
+@media (orientation: landscape) and (max-height:500px){
+  #menu{
+    right:8px;
+    top:50%;
+    bottom:auto;
+    left:auto;
+    transform:translateY(-50%);
+    flex-direction:column;
+    gap:6px;
+  }
+
+  #menu button{
+    width:38px;
+    height:38px;
+  }
+
+  #menu svg{
+    width:22px;
+    height:22px;
+  }
 
   #texto{
-    top:4%;
+    top:3%;
+    width:76%;
+  }
+
+  #titulo{
+    font-size:22px;
+  }
+
+  #instruccion{
+    font-size:16px;
+  }
+
+  #cuento{
+    display:none;
   }
 }
