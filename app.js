@@ -2,6 +2,7 @@ const fondo = document.getElementById("fondo");
 const oscuridad = document.getElementById("oscuridad");
 const ruido = document.getElementById("ruido");
 const flash = document.getElementById("flash");
+const luciernagas = document.getElementById("luciernagas");
 
 const timo = document.getElementById("timo");
 const pelota = document.getElementById("pelota");
@@ -52,6 +53,28 @@ Object.values(sonidos).forEach(s => {
   s.loop = true;
   s.volume = 0;
 });
+
+/* LUCIÉRNAGAS */
+
+function crearLuciernagas(cantidad = 18){
+  luciernagas.innerHTML = "";
+
+  for(let i = 0; i < cantidad; i++){
+    const luz = document.createElement("span");
+    luz.classList.add("luciernaga");
+
+    luz.style.left = `${15 + Math.random() * 70}%`;
+    luz.style.top = `${20 + Math.random() * 65}%`;
+    luz.style.animationDelay = `${Math.random() * 4}s`;
+    luz.style.animationDuration = `${3 + Math.random() * 4}s`;
+
+    luciernagas.appendChild(luz);
+  }
+}
+
+function intensidadLuciernagas(valor){
+  luciernagas.style.opacity = valor;
+}
 
 /* SONIDO */
 
@@ -134,24 +157,28 @@ function setLuzNarrativa(tipo){
     fondo.style.filter = "brightness(.45) saturate(.6) contrast(1.1)";
     oscuridad.style.opacity = .72;
     ruido.style.opacity = .35;
+    intensidadLuciernagas(.25);
   }
 
   if(tipo === "tunel"){
     fondo.style.filter = "brightness(.55) saturate(.55) contrast(1.25)";
     oscuridad.style.opacity = .45;
     ruido.style.opacity = .22;
+    intensidadLuciernagas(.12);
   }
 
   if(tipo === "respiracion"){
     fondo.style.filter = "brightness(.85) saturate(.8) contrast(1)";
     oscuridad.style.opacity = .18;
     ruido.style.opacity = .06;
+    intensidadLuciernagas(.25);
   }
 
   if(tipo === "dia"){
     fondo.style.filter = "brightness(1.08) saturate(1.05) contrast(1)";
     oscuridad.style.opacity = 0;
     ruido.style.opacity = 0;
+    intensidadLuciernagas(.65);
   }
 }
 
@@ -252,6 +279,8 @@ function cargarEscena(nombre){
 
 function portada(){
   fondo.src = "assets/portada/portada_fondo.png";
+
+  crearLuciernagas(18);
   setLuzNarrativa("penumbra");
 
   timo.classList.remove("oculto");
@@ -272,6 +301,8 @@ function portada(){
 
 function tunel(){
   fondo.src = "assets/tunel/fondo.png";
+
+  crearLuciernagas(8);
   setLuzNarrativa("tunel");
 
   timo.classList.remove("oculto");
@@ -309,6 +340,7 @@ function moverTunel(valor){
 
   oscuridad.style.opacity = .45 - valor * .22;
   ruido.style.opacity = .22 - valor * .16;
+  intensidadLuciernagas(.12 + valor * .35);
 
   if(sonidoActivo){
     sonidos.tunnelEcho.volume = .55 - valor * .25;
@@ -329,6 +361,8 @@ function moverTunel(valor){
 
 function respiracion(){
   fondo.src = "assets/respiracion/fondo.png";
+
+  crearLuciernagas(14);
   setLuzNarrativa("respiracion");
 
   timo.classList.remove("oculto");
@@ -348,6 +382,8 @@ function respiracion(){
 
 function finalEscena(){
   fondo.src = "assets/final/fondo.png";
+
+  crearLuciernagas(26);
   setLuzNarrativa("dia");
 
   timo.classList.remove("oculto");
@@ -433,6 +469,7 @@ window.addEventListener("click", event => {
 
     if(respirando){
       timo.classList.add("respirar");
+      intensidadLuciernagas(.65);
 
       setTexto(
         "Respira",
@@ -448,6 +485,7 @@ window.addEventListener("click", event => {
       vibrar(30);
     }else{
       timo.classList.remove("respirar");
+      intensidadLuciernagas(.25);
 
       setTexto(
         "Respira",
@@ -460,6 +498,8 @@ window.addEventListener("click", event => {
   if(escenaActual === "final"){
     vibrar(40);
     flashRapido();
+
+    intensidadLuciernagas(.95);
 
     if(sonidoActivo){
       sonidos.playBall.volume = .5;
@@ -491,6 +531,7 @@ window.addEventListener("touchmove", e => {
 
       oscuridad.style.opacity = .72 - progreso * .72;
       ruido.style.opacity = .35 - progreso * .35;
+      intensidadLuciernagas(.25 + progreso * .75);
 
       fondo.style.filter =
         `brightness(${.45 + progreso * .65})
