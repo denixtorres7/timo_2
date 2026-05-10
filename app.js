@@ -27,16 +27,29 @@ const sonidos = {
   stressLow: new Audio("sounds/stress_low.mp3"),
   stressHigh: new Audio("sounds/stress_high.mp3"),
   stressNoise: new Audio("sounds/stress_noise.mp3"),
+
+  heartbeatFast: new Audio("sounds/heartbeat_fast.mp3"),
+  heartbeatSoft: new Audio("sounds/heartbeat_soft.mp3"),
+
+  tunnelEcho: new Audio("sounds/tunnel_echo.mp3"),
+  rollingBall: new Audio("sounds/rolling_ball.mp3"),
+
   calmAir: new Audio("sounds/calm_air.mp3"),
-  calmPulse: new Audio("sounds/calm_pulse.mp3")
+  deepBreath: new Audio("sounds/deep_breath.mp3"),
+
+  fireflies: new Audio("sounds/fireflies_soft.mp3"),
+  softChimes: new Audio("sounds/soft_chimes.mp3"),
+  happyWind: new Audio("sounds/happy_wind.mp3"),
+
+  butterfly: new Audio("sounds/butterfly_flutter.mp3"),
+  playBall: new Audio("sounds/play_ball.mp3"),
+  softLaughs: new Audio("sounds/soft_laughs.mp3")
 };
 
 Object.values(sonidos).forEach(s => {
   s.loop = true;
   s.volume = 0;
 });
-
-/* ENCENDER / APAGAR SONIDO */
 
 function encenderSonido(){
   sonidoActivo = true;
@@ -62,11 +75,7 @@ function apagarSonido(){
 }
 
 btnSonido.addEventListener("click", () => {
-  if(sonidoActivo){
-    apagarSonido();
-  }else{
-    encenderSonido();
-  }
+  sonidoActivo ? apagarSonido() : encenderSonido();
 });
 
 /* UTILIDADES */
@@ -97,7 +106,11 @@ function flashRapido(){
   setTimeout(()=> flash.style.opacity = 0, 120);
 }
 
-/* LUZ SEGÚN HORA DE LA NARRACIÓN */
+function bajarTodosLosSonidos(){
+  Object.values(sonidos).forEach(s => s.volume = 0);
+}
+
+/* LUZ NARRATIVA */
 
 function setLuzNarrativa(tipo){
   if(tipo === "penumbra"){
@@ -125,29 +138,69 @@ function setLuzNarrativa(tipo){
   }
 }
 
-/* AUDIO */
-
-function actualizarAudio(estres, calma){
-  if(!sonidoActivo) return;
-
-  sonidos.stressLow.volume = estres * .6;
-  sonidos.stressHigh.volume = estres * .45;
-  sonidos.stressNoise.volume = estres * .5;
-
-  sonidos.calmAir.volume = calma * .75;
-  sonidos.calmPulse.volume = calma * .45;
-}
+/* AUDIO POR ESCENA */
 
 function actualizarAudioPorEscena(){
   if(!sonidoActivo) return;
 
-  if(escenaActual === "portada") actualizarAudio(1, 0);
-  if(escenaActual === "tunel") actualizarAudio(.55, .15);
-  if(escenaActual === "respiracion") actualizarAudio(.05, .9);
-  if(escenaActual === "final") actualizarAudio(0, 1);
+  bajarTodosLosSonidos();
+
+  if(escenaActual === "portada"){
+    sonidos.stressLow.volume = .45;
+    sonidos.stressHigh.volume = .15;
+    sonidos.stressNoise.volume = .25;
+    sonidos.heartbeatFast.volume = .55;
+    sonidos.tunnelEcho.volume = .35;
+    sonidos.fireflies.volume = .08;
+  }
+
+  if(escenaActual === "tunel"){
+    sonidos.tunnelEcho.volume = .55;
+    sonidos.rollingBall.volume = .22;
+    sonidos.stressLow.volume = .25;
+    sonidos.calmAir.volume = .12;
+  }
+
+  if(escenaActual === "respiracion"){
+    sonidos.heartbeatSoft.volume = .35;
+    sonidos.deepBreath.volume = .55;
+    sonidos.calmAir.volume = .65;
+    sonidos.softChimes.volume = .18;
+  }
+
+  if(escenaActual === "final"){
+    sonidos.happyWind.volume = .55;
+    sonidos.fireflies.volume = .4;
+    sonidos.softChimes.volume = .35;
+    sonidos.butterfly.volume = .18;
+    sonidos.playBall.volume = .22;
+    sonidos.softLaughs.volume = .16;
+  }
 }
 
-/* CARGAR ESCENAS */
+/* AUDIO DE REGULACIÓN PORTADA */
+
+function regularAudioPortada(){
+  if(!sonidoActivo) return;
+
+  const estres = 1 - progreso;
+  const calma = progreso;
+
+  sonidos.stressLow.volume = estres * .45;
+  sonidos.stressHigh.volume = estres * .35;
+  sonidos.stressNoise.volume = estres * .35;
+
+  sonidos.heartbeatFast.volume = estres * .55;
+  sonidos.tunnelEcho.volume = estres * .35;
+  sonidos.rollingBall.volume = estres * .2;
+
+  sonidos.heartbeatSoft.volume = calma * .35;
+  sonidos.calmAir.volume = calma * .65;
+  sonidos.fireflies.volume = .08 + calma * .45;
+  sonidos.softChimes.volume = calma * .25;
+}
+
+/* ESCENAS */
 
 function cargarEscena(nombre){
   escenaActual = nombre;
@@ -164,8 +217,6 @@ function cargarEscena(nombre){
 
   actualizarAudioPorEscena();
 }
-
-/* PORTADA */
 
 function portada(){
   fondo.src = "assets/portada/portada_fondo.png";
@@ -184,8 +235,6 @@ function portada(){
     "Timo era un armadillo que observaba todo con cuidado."
   );
 }
-
-/* TÚNEL */
 
 function tunel(){
   fondo.src = "assets/tunel/fondo.png";
@@ -211,8 +260,6 @@ function tunel(){
   );
 }
 
-/* RESPIRACIÓN */
-
 function respiracion(){
   fondo.src = "assets/respiracion/fondo.png";
   setLuzNarrativa("respiracion");
@@ -230,8 +277,6 @@ function respiracion(){
     "Respiró profundo y escuchó su propio ritmo."
   );
 }
-
-/* FINAL */
 
 function finalEscena(){
   fondo.src = "assets/final/fondo.png";
@@ -294,6 +339,10 @@ window.addEventListener("click", () => {
     vibrar([80,40,120]);
     flashRapido();
 
+    sonidos.stressHigh.volume = .65;
+    sonidos.stressNoise.volume = .55;
+    sonidos.rollingBall.volume = .55;
+
     setTexto(
       "¡Uy!",
       "Desliza despacio",
@@ -310,6 +359,11 @@ window.addEventListener("click", () => {
   if(escenaActual === "final"){
     vibrar(40);
     flashRapido();
+
+    if(sonidoActivo){
+      sonidos.playBall.volume = .5;
+      sonidos.softLaughs.volume = .35;
+    }
   }
 });
 
@@ -318,8 +372,12 @@ window.addEventListener("touchstart", e => {
 
   if(escenaActual === "respiracion"){
     timo.classList.add("respirar");
-    actualizarAudio(0, 1);
     vibrar(30);
+
+    if(sonidoActivo){
+      sonidos.deepBreath.volume = .75;
+      sonidos.heartbeatSoft.volume = .4;
+    }
   }
 });
 
@@ -343,7 +401,7 @@ window.addEventListener("touchmove", e => {
          saturate(${.6 + progreso * .45})
          contrast(${1.1 - progreso * .1})`;
 
-      actualizarAudio(1 - progreso, progreso);
+      regularAudioPortada();
 
       if(progreso > .25 && !timo.classList.contains("volver")){
         timo.classList.remove("rodarFuera");
@@ -364,7 +422,7 @@ window.addEventListener("touchmove", e => {
         );
 
         estadoPortada = "calma";
-        actualizarAudio(0, 1);
+        regularAudioPortada();
       }
     }
   }
