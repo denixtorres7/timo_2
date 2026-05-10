@@ -30,11 +30,50 @@
   </section>
 
   <nav id="menu">
-    <button onclick="cargarEscena('portada')">🏠 Portada</button>
-    <button onclick="cargarEscena('tunel')">🕳️ Túnel</button>
-    <button onclick="cargarEscena('respiracion')">🌬️ Respirar</button>
-    <button onclick="cargarEscena('final')">✨ Final</button>
-    <button id="btnSonido">🔊 Sonido</button>
+
+    <button onclick="cargarEscena('portada')" data-tooltip="Portada">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42"></circle>
+        <path d="M28 50 L50 30 L72 50"></path>
+        <path d="M36 50 L36 72 L64 72 L64 50"></path>
+        <circle class="luz" cx="72" cy="28" r="5"></circle>
+      </svg>
+    </button>
+
+    <button onclick="cargarEscena('tunel')" data-tooltip="Túnel">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42"></circle>
+        <circle cx="50" cy="50" r="25"></circle>
+        <circle cx="50" cy="50" r="12"></circle>
+      </svg>
+    </button>
+
+    <button onclick="cargarEscena('respiracion')" data-tooltip="Respirar">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42"></circle>
+        <path d="M28 56 C38 38, 62 38, 72 56"></path>
+        <path d="M34 66 C42 52, 58 52, 66 66"></path>
+      </svg>
+    </button>
+
+    <button onclick="cargarEscena('final')" data-tooltip="Jugar">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42"></circle>
+        <path d="M50 24 L55 41 L72 41 L58 51 L64 68 L50 58 L36 68 L42 51 L28 41 L45 41 Z"></path>
+        <circle class="luz" cx="72" cy="30" r="4"></circle>
+        <circle class="luz" cx="28" cy="60" r="3"></circle>
+      </svg>
+    </button>
+
+    <button id="btnSonido" data-tooltip="Sonido">
+      <svg viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="42"></circle>
+        <path d="M34 58 L44 58 L56 70 L56 30 L44 42 L34 42 Z"></path>
+        <path d="M64 42 C72 48, 72 52, 64 58"></path>
+        <path d="M70 36 C82 46, 82 54, 70 64"></path>
+      </svg>
+    </button>
+
   </nav>
 
 </div>
