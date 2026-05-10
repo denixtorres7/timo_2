@@ -21,8 +21,6 @@ let sonidoActivo = false;
 let estadoPortada = "oscuro";
 let startY = null;
 
-/* SONIDOS */
-
 const sonidos = {
   stressLow: new Audio("sounds/stress_low.mp3"),
   stressHigh: new Audio("sounds/stress_high.mp3"),
@@ -58,7 +56,7 @@ function encenderSonido(){
     s.play().catch(()=>{});
   });
 
-  btnSonido.textContent = "🔇 Apagar sonido";
+  btnSonido.setAttribute("data-tooltip", "Apagar sonido");
   actualizarAudioPorEscena();
 }
 
@@ -71,14 +69,13 @@ function apagarSonido(){
     s.volume = 0;
   });
 
-  btnSonido.textContent = "🔊 Encender sonido";
+  btnSonido.setAttribute("data-tooltip", "Encender sonido");
 }
 
-btnSonido.addEventListener("click", () => {
+btnSonido.addEventListener("click", (event) => {
+  event.stopPropagation();
   sonidoActivo ? apagarSonido() : encenderSonido();
 });
-
-/* UTILIDADES */
 
 function limpiarPersonajes(){
   [timo, pelota, mono, conejo, pajaro, mariposa].forEach(p => {
@@ -110,8 +107,6 @@ function bajarTodosLosSonidos(){
   Object.values(sonidos).forEach(s => s.volume = 0);
 }
 
-/* LUZ NARRATIVA */
-
 function setLuzNarrativa(tipo){
   if(tipo === "penumbra"){
     fondo.style.filter = "brightness(.45) saturate(.6) contrast(1.1)";
@@ -137,8 +132,6 @@ function setLuzNarrativa(tipo){
     ruido.style.opacity = 0;
   }
 }
-
-/* AUDIO POR ESCENA */
 
 function actualizarAudioPorEscena(){
   if(!sonidoActivo) return;
@@ -178,8 +171,6 @@ function actualizarAudioPorEscena(){
   }
 }
 
-/* AUDIO DE REGULACIÓN PORTADA */
-
 function regularAudioPortada(){
   if(!sonidoActivo) return;
 
@@ -199,8 +190,6 @@ function regularAudioPortada(){
   sonidos.fireflies.volume = .08 + calma * .45;
   sonidos.softChimes.volume = calma * .25;
 }
-
-/* ESCENAS */
 
 function cargarEscena(nombre){
   escenaActual = nombre;
@@ -327,8 +316,6 @@ function finalEscena(){
     "Pero todos merecemos jugar."
   );
 }
-
-/* INTERACCIONES */
 
 window.addEventListener("click", () => {
   if(escenaActual === "portada" && estadoPortada === "oscuro"){
