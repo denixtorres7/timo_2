@@ -20,6 +20,10 @@ let progreso = 0;
 let sonidoActivo = false;
 let estadoPortada = "oscuro";
 let startY = null;
+let tunelProgreso = 0;
+let respirando = false;
+
+/* SONIDOS */
 
 const sonidos = {
   stressLow: new Audio("sounds/stress_low.mp3"),
@@ -49,6 +53,8 @@ Object.values(sonidos).forEach(s => {
   s.volume = 0;
 });
 
+/* SONIDO */
+
 function encenderSonido(){
   sonidoActivo = true;
 
@@ -72,10 +78,17 @@ function apagarSonido(){
   btnSonido.setAttribute("data-tooltip", "Encender sonido");
 }
 
-btnSonido.addEventListener("click", (event) => {
+btnSonido.addEventListener("click", event => {
   event.stopPropagation();
-  sonidoActivo ? apagarSonido() : encenderSonido();
+
+  if(sonidoActivo){
+    apagarSonido();
+  }else{
+    encenderSonido();
+  }
 });
+
+/* UTILIDADES */
 
 function limpiarPersonajes(){
   [timo, pelota, mono, conejo, pajaro, mariposa].forEach(p => {
@@ -95,17 +108,26 @@ function setTexto(t, i, c){
 }
 
 function vibrar(patron){
-  if(navigator.vibrate) navigator.vibrate(patron);
+  if(navigator.vibrate){
+    navigator.vibrate(patron);
+  }
 }
 
 function flashRapido(){
   flash.style.opacity = .35;
-  setTimeout(()=> flash.style.opacity = 0, 120);
+
+  setTimeout(() => {
+    flash.style.opacity = 0;
+  }, 120);
 }
 
 function bajarTodosLosSonidos(){
-  Object.values(sonidos).forEach(s => s.volume = 0);
+  Object.values(sonidos).forEach(s => {
+    s.volume = 0;
+  });
 }
+
+/* LUZ NARRATIVA */
 
 function setLuzNarrativa(tipo){
   if(tipo === "penumbra"){
@@ -132,6 +154,8 @@ function setLuzNarrativa(tipo){
     ruido.style.opacity = 0;
   }
 }
+
+/* AUDIO POR ESCENA */
 
 function actualizarAudioPorEscena(){
   if(!sonidoActivo) return;
@@ -171,6 +195,8 @@ function actualizarAudioPorEscena(){
   }
 }
 
+/* AUDIO PORTADA */
+
 function regularAudioPortada(){
   if(!sonidoActivo) return;
 
@@ -191,21 +217,38 @@ function regularAudioPortada(){
   sonidos.softChimes.volume = calma * .25;
 }
 
+/* CARGA DE ESCENAS */
+
 function cargarEscena(nombre){
   escenaActual = nombre;
   progreso = 0;
   estadoPortada = "oscuro";
+  tunelProgreso = 0;
+  respirando = false;
 
   limpiarPersonajes();
   fondo.style.filter = "";
 
-  if(nombre === "portada") portada();
-  if(nombre === "tunel") tunel();
-  if(nombre === "respiracion") respiracion();
-  if(nombre === "final") finalEscena();
+  if(nombre === "portada"){
+    portada();
+  }
+
+  if(nombre === "tunel"){
+    tunel();
+  }
+
+  if(nombre === "respiracion"){
+    respiracion();
+  }
+
+  if(nombre === "final"){
+    finalEscena();
+  }
 
   actualizarAudioPorEscena();
 }
+
+/* PORTADA */
 
 function portada(){
   fondo.src = "assets/portada/portada_fondo.png";
@@ -224,6 +267,8 @@ function portada(){
     "Timo era un armadillo que observaba todo con cuidado."
   );
 }
+
+/* TÚNEL */
 
 function tunel(){
   fondo.src = "assets/tunel/fondo.png";
@@ -244,10 +289,43 @@ function tunel(){
 
   setTexto(
     "El túnel",
-    "Inclina el celular",
+    "Desliza o inclina",
     "La pelota cayó en un túnel estrecho, demasiado pequeño para algunos… pero no para todos."
   );
 }
+
+/* MOVER TÚNEL */
+
+function moverTunel(valor){
+  const xTimo = 20 + valor * 42;
+  const yTimo = 62 - valor * 14;
+
+  timo.style.left = `${xTimo}%`;
+  timo.style.top = `${yTimo}%`;
+  timo.style.transform = `rotate(${valor * 360}deg)`;
+
+  pelota.style.left = `${68 - valor * 8}%`;
+  pelota.style.top = `${54 + valor * 8}%`;
+
+  oscuridad.style.opacity = .45 - valor * .22;
+  ruido.style.opacity = .22 - valor * .16;
+
+  if(sonidoActivo){
+    sonidos.tunnelEcho.volume = .55 - valor * .25;
+    sonidos.rollingBall.volume = .22 + valor * .25;
+    sonidos.calmAir.volume = .12 + valor * .25;
+  }
+
+  if(valor > .95){
+    setTexto(
+      "Lo logró",
+      "Avanzó a su manera",
+      "Lo que parecía un obstáculo, era justo el camino que él entendía mejor."
+    );
+  }
+}
+
+/* RESPIRACIÓN */
 
 function respiracion(){
   fondo.src = "assets/respiracion/fondo.png";
@@ -258,14 +336,15 @@ function respiracion(){
   timo.style.left = "50%";
   timo.style.top = "58%";
   timo.style.width = "22vw";
-  timo.classList.add("respirar");
 
   setTexto(
     "Respira",
-    "Mantén presionado",
+    "Toca para respirar",
     "Respiró profundo y escuchó su propio ritmo."
   );
 }
+
+/* FINAL */
 
 function finalEscena(){
   fondo.src = "assets/final/fondo.png";
@@ -317,11 +396,17 @@ function finalEscena(){
   );
 }
 
-window.addEventListener("click", () => {
+/* INTERACCIONES */
+
+window.addEventListener("click", event => {
+  if(event.target.closest("#menu")) return;
+
   if(escenaActual === "portada" && estadoPortada === "oscuro"){
     estadoPortada = "asustado";
 
-    if(!sonidoActivo) encenderSonido();
+    if(!sonidoActivo){
+      encenderSonido();
+    }
 
     vibrar([80,40,120]);
     flashRapido();
@@ -336,11 +421,40 @@ window.addEventListener("click", () => {
       "Algunas cosas las sentía más intensas que los demás."
     );
 
-    setTimeout(()=>{
+    setTimeout(() => {
       timo.classList.remove("temblar");
       timo.classList.add("rodarFuera");
       estadoPortada = "regular";
-    },700);
+    }, 700);
+  }
+
+  if(escenaActual === "respiracion"){
+    respirando = !respirando;
+
+    if(respirando){
+      timo.classList.add("respirar");
+
+      setTexto(
+        "Respira",
+        "Toca otra vez para pausar",
+        "Respiró profundo y escuchó su propio ritmo."
+      );
+
+      if(sonidoActivo){
+        sonidos.deepBreath.volume = .75;
+        sonidos.heartbeatSoft.volume = .4;
+      }
+
+      vibrar(30);
+    }else{
+      timo.classList.remove("respirar");
+
+      setTexto(
+        "Respira",
+        "Toca para respirar",
+        "Respiró profundo y escuchó su propio ritmo."
+      );
+    }
   }
 
   if(escenaActual === "final"){
@@ -356,27 +470,22 @@ window.addEventListener("click", () => {
 
 window.addEventListener("touchstart", e => {
   startY = e.touches[0].clientY;
-
-  if(escenaActual === "respiracion"){
-    timo.classList.add("respirar");
-    vibrar(30);
-
-    if(sonidoActivo){
-      sonidos.deepBreath.volume = .75;
-      sonidos.heartbeatSoft.volume = .4;
-    }
-  }
 });
 
 window.addEventListener("touchmove", e => {
   const y = e.touches[0].clientY;
+
+  /* PORTADA */
 
   if(escenaActual === "portada" && estadoPortada === "regular"){
     const diferencia = startY - y;
 
     if(diferencia > 0){
       progreso += diferencia / 1600;
-      if(progreso > 1) progreso = 1;
+
+      if(progreso > 1){
+        progreso = 1;
+      }
 
       startY = y;
 
@@ -413,16 +522,40 @@ window.addEventListener("touchmove", e => {
       }
     }
   }
+
+  /* TÚNEL */
+
+  if(escenaActual === "tunel"){
+    const diferencia = startY - y;
+
+    tunelProgreso += Math.abs(diferencia) / 900;
+
+    if(tunelProgreso > 1){
+      tunelProgreso = 1;
+    }
+
+    startY = y;
+
+    moverTunel(tunelProgreso);
+  }
 });
+
+/* INCLINACIÓN COMO APOYO */
 
 window.addEventListener("deviceorientation", e => {
   if(escenaActual !== "tunel") return;
 
   const gamma = e.gamma || 0;
-  const beta = e.beta || 0;
 
-  timo.style.transform = `translate(${gamma * 1.2}px, ${beta * .4}px)`;
-  pelota.style.transform = `translate(${-gamma * 1.5}px, ${-beta * .4}px)`;
+  if(Math.abs(gamma) > 5){
+    tunelProgreso += Math.abs(gamma) / 1200;
+
+    if(tunelProgreso > 1){
+      tunelProgreso = 1;
+    }
+
+    moverTunel(tunelProgreso);
+  }
 });
 
 cargarEscena("portada");
