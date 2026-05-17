@@ -67,6 +67,47 @@ let respiraProgreso = 0;
 let tunelX = 0.04, tunelY = 0.55;
 let ultimoGolpe = 0;
 
+let pointerActivo = false;
+let ultimaY = 0;
+
+window.addEventListener("pointerdown", e => {
+  pointerActivo = true;
+  ultimaY = e.clientY;
+
+  if(!sonidoActivo){
+    encenderSonido();
+  }
+});
+
+window.addEventListener("pointerup", () => {
+  pointerActivo = false;
+});
+
+window.addEventListener("pointercancel", () => {
+  pointerActivo = false;
+});
+
+window.addEventListener("pointermove", e => {
+  if(!pointerActivo) return;
+
+  const diferencia = ultimaY - e.clientY;
+  ultimaY = e.clientY;
+
+  if(Math.abs(diferencia) < 2) return;
+
+  if(escenaActual === "portada" && estadoPortada === "regular"){
+    progreso += diferencia / 900;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarPortadaConProgreso();
+  }
+
+  if(escenaActual === "respira"){
+    progreso += diferencia / 900;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarRespiraConProgreso();
+  }
+}
+
 const sonidos = {};
 Object.entries(SOUND_PATHS).forEach(([key, path]) => {
   sonidos[key] = new Audio(path);
@@ -193,6 +234,29 @@ function tocarPortada(){
   setTexto("¡Uy!", "Desliza despacio", "Timo se hizo bolita para protegerse.");
   setTimeout(()=>estadoPortada="regular", 900);
 }
+
+if(escenaActual === "portada" && estadoPortada === "oscuro"){
+  estadoPortada = "regular";
+
+  vibrar([80,40,120]);
+  flashRapido();
+
+  timo.classList.remove("temblar");
+  timo.classList.add("rodarFuera");
+
+  if(sonidoActivo){
+    sonidos.stressHigh.volume = .65;
+    sonidos.stressNoise.volume = .55;
+    sonidos.rollingBall.volume = .55;
+  }
+
+  setTexto(
+    "¡Uy!",
+    "Desliza despacio para que Timo vuelva",
+    "Cuando todo fue demasiado, Timo necesitó tiempo y suavidad."
+  );
+}
+
 function regularPortada(delta){
   progreso = Math.min(1, progreso + delta/1200);
   const p=progreso;
@@ -207,6 +271,43 @@ function regularPortada(delta){
     estadoPortada="calma";
   }
   audioPortada();
+}
+function actualizarPortadaConProgreso(){
+
+  oscuridad.style.opacity = 0.92 - progreso * 0.9;
+  ruido.style.opacity = 0.32 - progreso * 0.32;
+
+  fondo.style.filter =
+    `brightness(${0.38 + progreso * 0.75})
+     saturate(${0.55 + progreso * 0.55})
+     contrast(${1.15 - progreso * 0.12})`;
+
+  intensidadLuciernagas(0.25 + progreso * 0.75);
+
+  if(sonidoActivo){
+    regularAudioPortada();
+  }
+
+  if(progreso > .18 && !timo.classList.contains("volver")){
+    timo.classList.remove("rodarFuera");
+    timo.classList.add("volver");
+  }
+
+  if(progreso > .95 && estadoPortada !== "calma"){
+    timo.src = "assets/portada/timo_open.png";
+    timo.classList.remove("volver", "temblar");
+    timo.style.left = "35%";
+    timo.style.top = "58%";
+    timo.style.width = "18vw";
+
+    setTexto(
+      "Gracias",
+      "El mundo bajó un poquito",
+      "Timo pudo desenroscarse cuando la luz y los sonidos se hicieron más suaves."
+    );
+
+    estadoPortada = "calma";
+  }
 }
 
 function escenaRespira(){
@@ -285,6 +386,43 @@ function escenaFinal(){
   intensidadLuciernagas(.9);
   setTexto("Todos jugamos", "Toca para celebrar", "No todos nos movemos igual… pero todos merecemos jugar.");
   audioFinal();
+
+   pelota.classList.remove("oculto");
+   pelota.classList.add("pelotaInteractiva");
+   pelota.src = "assets/final/pelota.png";
+   pelota.style.left = "58%";
+   pelota.style.top = "72%";
+   pelota.style.width = "8vw";
+}
+
+pelota.addEventListener("pointerdown", e => {
+  e.stopPropagation();
+
+  if(escenaActual !== "final") return;
+
+  pelota.classList.remove("saltarPelota");
+  void pelota.offsetWidth;
+  pelota.classList.add("saltarPelota");
+
+  document.body.classList.add("sacudidaSuave");
+  setTimeout(() => {
+    document.body.classList.remove("sacudidaSuave");
+  }, 300);
+
+  if(sonidoActivo){
+    sonidos.playBall.currentTime = 0;
+    sonidos.playBall.volume = .75;
+    sonidos.happyWind.volume = .65;
+    sonidos.softLaughs.volume = .35;
+  }
+
+  vibrar(35);
+
+  setTexto(
+    "¡La lanzaste!",
+    "Toca otra vez la pelota",
+    "Ahora tú también juegas con Timo."
+  );
 }
 
 window.addEventListener("click", e=>{
