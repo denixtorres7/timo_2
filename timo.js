@@ -9,7 +9,6 @@ const ASSETS = {
   bolita: "assets/portada/timo_bolita.png",
   abierto: "assets/portada/timo_open.png",
   luciernagas: "assets/portada/luciernagas.png",
-  titulo: "assets/portada/timo_titulo.png",
   mono: "assets/portada/mono.png",
   conejo: "assets/portada/conejo.png",
   pajaro: "assets/portada/pajaro.png",
@@ -86,44 +85,6 @@ const cuento = $("cuento");
 const btnSonido = $("btnSonido");
 const btnSensible = $("btnSensible");
 const avisoAudio = $("avisoAudio");
-
-
-// Imagen compuesta de portada: etiqueta, título TIMO y autora.
-// Guarda el PNG transparente como: assets/portada/timo_titulo.png
-let tituloLibroPortada = null;
-function asegurarTituloLibroPortada() {
-  if (tituloLibroPortada) return tituloLibroPortada;
-  tituloLibroPortada = document.createElement("img");
-  tituloLibroPortada.id = "tituloLibroPortada";
-  tituloLibroPortada.alt = "TIMO, libro interactivo sensorial, Jennifer Natalia Rivera Ortiz";
-  tituloLibroPortada.src = ASSETS.portada.titulo;
-  tituloLibroPortada.style.position = "absolute";
-  tituloLibroPortada.style.left = "43%";
-  tituloLibroPortada.style.top = "24%";
-  tituloLibroPortada.style.width = "min(36vw, 390px)";
-  tituloLibroPortada.style.transform = "translate(-50%,-50%)";
-  tituloLibroPortada.style.zIndex = "8";
-  tituloLibroPortada.style.pointerEvents = "none";
-  tituloLibroPortada.style.opacity = "1";
-  tituloLibroPortada.style.filter = "drop-shadow(0 5px 7px rgba(0,0,0,.18))";
-  app.appendChild(tituloLibroPortada);
-  return tituloLibroPortada;
-}
-
-function mostrarTituloLibroPortada() {
-  const img = asegurarTituloLibroPortada();
-  img.src = ASSETS.portada.titulo;
-  img.style.display = "block";
-  img.style.opacity = "1";
-  img.style.left = "43%";
-  img.style.top = "24%";
-  img.style.width = "min(36vw, 390px)";
-  img.style.filter = "drop-shadow(0 5px 7px rgba(0,0,0,.18))";
-}
-
-function ocultarTituloLibroPortada() {
-  if (tituloLibroPortada) tituloLibroPortada.style.display = "none";
-}
 
 let escenaActual = "portada";
 let sonidoActivo = false;
@@ -223,7 +184,6 @@ function ocultarTodo() {
   });
   ayEco.className = "oculto";
   luciernagasCampo.innerHTML = "";
-  ocultarTituloLibroPortada();
 }
 
 function crearLuciernagas(cantidad = 18, foco = { x: 50, y: 50, radio: 30 }) {
@@ -267,6 +227,21 @@ function actualizarAudioPorEscena() {
   if (escenaActual === "respira") audioRespira();
   if (escenaActual === "tunel") audioTunel();
   if (escenaActual === "final") audioFinal();
+}
+
+function audioPortada() {
+  const estres = 1 - progresoPortada;
+  const calma = progresoPortada;
+  setVol("stressLow", 0.45 * estres);
+  setVol("stressHigh", 0.32 * estres);
+  setVol("stressNoise", 0.34 * estres);
+  setVol("heartbeatFast", 0.58 * estres);
+  setVol("tunnelEcho", 0.28 * estres);
+  setVol("rollingBall", 0.18 * estres);
+  setVol("calmAir", 0.55 * calma);
+  setVol("fireflies", 0.12 + 0.45 * calma);
+  setVol("softChimes", 0.22 * calma);
+  setVol("heartbeatSoft", 0.28 * calma);
 }
 
 function audioRespira() {
@@ -323,37 +298,39 @@ function cargarEscena(nombre) {
 function escenaPortada(){
   fondo.src = ASSETS.portada.fondo;
 
-  // La portada se organiza como el PNG de referencia: título centrado arriba,
-  // mono a la derecha, conejo abajo izquierda, pelota cerca del conejo,
-  // mariposa al centro y Timo pequeño en la zona sensible de entrada.
   clima({
-    os:.18,
-    ruidoOp:.06,
-    brillo:.95,
-    sat:1.02,
-    contraste:1.02,
-    color:"#7fcbd7",
-    colorOp:.10
+    os:.94,
+    ruidoOp:.32,
+    brillo:.42,
+    sat:.62,
+    contraste:1.15,
+    color:"#07111f",
+    colorOp:.25
   });
 
-  crearLuciernagas(20,{x:52,y:56,radio:38});
-  mostrarTituloLibroPortada();
+  crearLuciernagas(12,{x:18,y:63,radio:10});
 
-  mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "53%", "54%", "48vw");
-  mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "11vw");
+mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "13vw");
+  mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
   timo.classList.add("temblar");
 
-  mostrar(mono, ASSETS.portada.mono, "79%", "34%", "26vw");
-  mostrar(conejo, ASSETS.portada.conejo, "12%", "75%", "14vw");
-  mostrar(pajaro, ASSETS.portada.pajaro, "44%", "47%", "7vw");
-  mostrar(mariposa, ASSETS.portada.mariposa, "47%", "49%", "7vw");
-  mostrar(pelota, ASSETS.portada.pelota, "31%", "74%", "9vw");
+  mostrar(mono, ASSETS.portada.mono, "69%", "38%", "18vw");
+  mostrar(conejo, ASSETS.portada.conejo, "73%", "72%", "12vw");
+  mostrar(pajaro, ASSETS.portada.pajaro, "48%", "24%", "9vw");
+  mostrar(mariposa, ASSETS.portada.mariposa, "52%", "52%", "7vw");
+  mostrar(pelota, ASSETS.portada.pelota, "58%", "72%", "8vw");
 
-  // Estado sensorial inicial: los personajes están presentes, pero más apagados.
-  [mono, conejo, pajaro, mariposa, pelota].forEach(el => {
-    el.style.opacity = ".45";
-    el.style.filter = "brightness(.75) saturate(.85) blur(.35px)";
-  });
+  mono.style.opacity = ".12";
+  conejo.style.opacity = ".12";
+  pajaro.style.opacity = ".14";
+  mariposa.style.opacity = ".16";
+  pelota.style.opacity = ".12";
+
+  mono.style.filter = "brightness(.35) blur(1px)";
+  conejo.style.filter = "brightness(.35) blur(1px)";
+  pajaro.style.filter = "brightness(.4) blur(1px)";
+  mariposa.style.filter = "brightness(.45) blur(1px)";
+  pelota.style.filter = "brightness(.35) blur(1px)";
 
   spotLuz.style.left = "18%";
   spotLuz.style.top = "63%";
@@ -378,14 +355,13 @@ function tocarPortada() {
   timo.classList.add("rodarFuera");
   luciernagasDibujo.style.left = "110%";
   spotLuz.style.left = "110%";
-  if (tituloLibroPortada) tituloLibroPortada.style.opacity = ".82";
   setTexto("¡Uy!", "Desliza despacio para que Timo vuelva", "Timo se hizo bolita para protegerse. Necesitó que el mundo bajara su intensidad.");
   setVol("stressHigh", 0.22);
   setVol("stressNoise", 0.18);
   setVol("rollingBall", 0.20);
 }
 function actualizarPortadaConProgreso(){
-  const p = progresoPortada;
+  const p = progreso;
 
   clima({
     os:.94 - p*.86,
@@ -444,75 +420,38 @@ function actualizarPortadaConProgreso(){
 function regularPortada(delta) {
   progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 900));
   const p = progresoPortada;
-
   [mono, conejo, pajaro, mariposa, pelota].forEach(el => {
-    el.style.opacity = .45 + p * .55;
-    el.style.filter = `brightness(${.75 + p * .25}) saturate(${.85 + p * .15}) blur(${.35 - p * .35}px)`;
-  });
-
-  clima({
-    os: 0.94 - p * 0.86,
-    ruidoOp: 0.32 - p * 0.30,
-    brillo: 0.42 + p * 0.68,
-    sat: 0.62 + p * 0.35,
-    contraste: 1.15 - p * 0.1,
-    color: "#ffb36b",
-    colorOp: 0.08 + p * 0.18
-  });
-
+  el.style.opacity = .12 + p * .88;
+  el.style.filter = `brightness(${.35 + p * .75}) blur(${1 - p}px)`;
+});
+  clima({ os: 0.94 - p * 0.86, ruidoOp: 0.32 - p * 0.30, brillo: 0.42 + p * 0.68, sat: 0.62 + p * 0.35, contraste: 1.15 - p * 0.1, color: "#ffb36b", colorOp: 0.08 + p * 0.18 });
   intensidadLuciernagas(0.35 + p * 0.6);
-  spotLuz.style.left = `${18 + p * 18}%`;
-  spotLuz.style.top = `${63 - p * 4}%`;
+  spotLuz.style.left = `${18 + p * 19}%`;
+  spotLuz.style.top = `${63 - p * 3}%`;
   spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p * 1.1})`;
-  luciernagasDibujo.style.left = `${53 - p * 12}%`;
-  luciernagasDibujo.style.top = `${54 + p * 1}%`;
-  luciernagasDibujo.style.width = `${48 + p * 8}vw`;
+  luciernagasDibujo.style.left = `${18 + p * 18}%`;
+  luciernagasDibujo.style.top = `${63 - p * 4}%`;
+  luciernagasDibujo.style.width = `${24 + p * 7}vw`;
 
-  if (tituloLibroPortada) {
-    tituloLibroPortada.style.opacity = `${.82 + p * .18}`;
-    tituloLibroPortada.style.transform = `translate(-50%,-50%) scale(${1 + p * .02})`;
-  }
-
-  // Transición narrativa: Timo no aparece de golpe; vuelve rodando y se desenrolla poco a poco.
-  if (p > 0.22 && p < 0.95) {
-    const q = Math.min(1, Math.max(0, (p - 0.22) / 0.73));
-    timo.classList.remove("rodarFuera", "temblar");
+  if (p > 0.22 && !timo.classList.contains("volver")) {
+    timo.classList.remove("rodarFuera");
     timo.classList.add("volver");
-    timo.style.transition = "left .25s ease-out, top .25s ease-out, width .25s ease-out, transform .25s ease-out, opacity .25s ease-out";
-    timo.style.left = `${18 + q * 18}%`;
-    timo.style.top = `${63 - q * 4}%`;
-    timo.style.width = `${15 + q * 4}vw`;
-    timo.style.opacity = 1;
-
-    if (q > 0.72) {
-      timo.src = ASSETS.portada.abierto;
-      const abrir = (q - 0.72) / 0.28;
-      timo.style.transform = `translate(-50%,-50%) rotate(${(1 - abrir) * 80}deg) scale(${0.86 + abrir * 0.14})`;
-      setTexto("", "Muy despacio", "Timo empezó a desenrollarse cuando el mundo se volvió más suave.");
-    } else {
-      timo.src = ASSETS.portada.bolita;
-      timo.style.transform = `translate(-50%,-50%) rotate(${(1 - q) * 520}deg) scale(${0.82 + q * 0.12})`;
-    }
   }
 
   if (p > 0.95 && estadoPortada !== "calma") {
     timo.classList.remove("volver", "temblar", "rodarFuera");
     mostrar(timo, ASSETS.portada.abierto, "36%", "59%", "19vw");
-    timo.style.transition = "transform .45s ease-out";
-    timo.style.transform = "translate(-50%,-50%) scale(1)";
     setTexto("", "Gracias por esperar", "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar.");
     estadoPortada = "calma";
   }
-
   audioPortada();
 }
 
 function audioPortada(){
-  const p = progresoPortada;
+  const p = progreso;
   const estres = 1 - p;
   const calma = p;
 
-  // El sonido de estrés baja progresivamente para representar regulación sensorial.
   setVol("stressLow", .18 * estres);
   setVol("stressHigh", .10 * estres);
   setVol("stressNoise", .08 * estres);
@@ -520,40 +459,10 @@ function audioPortada(){
   setVol("tunnelEcho", .10 * estres);
   setVol("rollingBall", .06 * estres);
 
-  // Los sonidos de calma suben de manera suave.
-  setVol("heartbeatSoft", .08 + .12 * calma);
-  setVol("calmAir", .10 + .22 * calma);
+  setVol("heartbeatSoft", .08 * calma);
+  setVol("calmAir", .22 * calma);
   setVol("fireflies", .16 + .20 * calma);
   setVol("softChimes", .12 * calma);
-}
-
-function escenaRespira() {
-  fondo.src = ASSETS.respira.fondo;
-  clima({
-    os: 0.46,
-    ruidoOp: 0.12,
-    brillo: 0.75,
-    sat: 0.78,
-    contraste: 1.05,
-    color: "#f0b67a",
-    colorOp: 0.18
-  });
-  crearLuciernagas(16, { x: 33, y: 62, radio: 18 });
-  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "28vw");
-  timo.classList.add("balancito");
-  mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "7vw");
-  mariposa.classList.add("flotar");
-  mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "9vw");
-  pajaro.classList.add("flotar");
-  mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "24vw");
-  spotLuz.style.left = "24%";
-  spotLuz.style.top = "62%";
-  setTexto(
-    "Respira",
-    "Desliza lento con Timo",
-    "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro."
-  );
-  audioRespira();
 }
 
 function moverRespira(delta) {
@@ -652,17 +561,7 @@ function moverTunelDesktop(dx, dy = 0) {
   actualizarTimoTunel();
 }
 
-let turnoPelotaFinal = 0;
-const recorridoPelotaFinal = [
-  { nombre: "Timo", left: "30%", top: "66%", texto: "Timo la recibió con calma." },
-  { nombre: "Mono", left: "68%", top: "38%", texto: "El mono la devolvió desde arriba." },
-  { nombre: "Conejo", left: "18%", top: "72%", texto: "El conejo la empujó con cuidado." },
-  { nombre: "Pájaro", left: "54%", top: "24%", texto: "El pájaro la hizo volar suave." },
-  { nombre: "Mariposa", left: "46%", top: "50%", texto: "La mariposa la guió por el aire." }
-];
-
 function escenaFinal() {
-  turnoPelotaFinal = 0;
   fondo.src = ASSETS.final.fondo;
   clima({ os: 0.18, ruidoOp: 0, brillo: 0.78, sat: 1.05, contraste: 1.05, color: "#16264d", colorOp: 0.35 });
   crearLuciernagas(34, { x: 50, y: 55, radio: 45 });
@@ -688,32 +587,14 @@ function escenaFinal() {
 
 function lanzarPelota() {
   if (escenaActual !== "final") return;
-
-  const destino = recorridoPelotaFinal[turnoPelotaFinal % recorridoPelotaFinal.length];
-  turnoPelotaFinal += 1;
-
   pelota.classList.remove("saltarPelota");
-  pelota.style.transition = "left .55s cubic-bezier(.2,.8,.2,1), top .55s cubic-bezier(.2,.8,.2,1), transform .55s ease";
-  pelota.style.left = destino.left;
-  pelota.style.top = destino.top;
-  pelota.style.transform = "translate(-50%,-50%) scale(1.18) rotate(18deg)";
-
-  setTimeout(() => {
-    pelota.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
-  }, 560);
-
+  void pelota.offsetWidth;
+  pelota.classList.add("saltarPelota");
   playOneShot("playBall", 0.75);
   playOneShot("softLaughs", 0.35);
   setVol("happyWind", 0.65);
   vibrar(35);
-  intensidadLuciernagas(1);
-  setTimeout(() => intensidadLuciernagas(0.9), 500);
-
-  setTexto(
-    "¡Estamos jugando!",
-    `Toca la pelota otra vez: ahora va hacia ${destino.nombre}`,
-    destino.texto + " Ahora tú también haces parte del juego."
-  );
+  setTexto("¡La lanzaste!", "Toca otra vez la pelota", "Ahora tú también juegas con Timo.");
 }
 
 function manejarTapGlobal(e) {
