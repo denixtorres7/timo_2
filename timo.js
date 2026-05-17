@@ -1,6 +1,8 @@
-/* TIMO interactivo sensorial
-   Ajusta los nombres de archivos en ASSETS si tus PNG/MP3 se llaman diferente.
+/* TIMO interactivo sensorial - versión corregida
+   Estructura: 4 escenas en el orden de la historia:
+   1. Portada  2. Respira  3. Túnel  4. Final
 */
+
 const ASSETS = {
   portada: {
     fondo: "assets/portada/fondo_color.png",
@@ -11,7 +13,6 @@ const ASSETS = {
   respira: {
     fondo: "assets/respira/fondo_color.png",
     timoTronco: "assets/respira/timo_tronco.png",
-    tronco: "assets/respira/tronco.png",
     pajaro: "assets/respira/pajaro.png",
     mariposa: "assets/respira/mariposa.png",
     luciernagas: "assets/respira/luciernagas.png"
@@ -54,29 +55,461 @@ const SOUND_PATHS = {
   softLaughs: "sounds/soft_laughs.mp3"
 };
 
-const $ = id => document.getElementById(id);
-const app = $("app"), fondo = $("fondo"), cieloColor = $("cieloColor"), oscuridad = $("oscuridad"), spotLuz = $("spotLuz"), ruido = $("ruido"), flash = $("flash"), luciernagasCampo = $("luciernagasCampo"), luciernagasDibujo = $("luciernagasDibujo"), timo = $("timo"), tronco = $("tronco"), pelota = $("pelota"), mono = $("mono"), conejo = $("conejo"), pajaro = $("pajaro"), mariposa = $("mariposa"), ayEco = $("ayEco"), titulo = $("titulo"), instruccion = $("instruccion"), cuento = $("cuento"), btnSonido = $("btnSonido"), btnSensible = $("btnSensible"), avisoAudio = $("avisoAudio");
+const $ = (id) => document.getElementById(id);
+
+const app = $("app");
+const fondo = $("fondo");
+const cieloColor = $("cieloColor");
+const oscuridad = $("oscuridad");
+const spotLuz = $("spotLuz");
+const ruido = $("ruido");
+const flash = $("flash");
+const luciernagasCampo = $("luciernagasCampo");
+const luciernagasDibujo = $("luciernagasDibujo");
+const timo = $("timo");
+const tronco = $("tronco");
+const pelota = $("pelota");
+const mono = $("mono");
+const conejo = $("conejo");
+const pajaro = $("pajaro");
+const mariposa = $("mariposa");
+const ayEco = $("ayEco");
+const titulo = $("titulo");
+const instruccion = $("instruccion");
+const cuento = $("cuento");
+const btnSonido = $("btnSonido");
+const btnSensible = $("btnSensible");
+const avisoAudio = $("avisoAudio");
 
 let escenaActual = "portada";
 let sonidoActivo = false;
 let modoSensible = false;
 let estadoPortada = "oscuro";
-let progreso = 0;
-let startX = null, startY = null;
-let respiraProgreso = 0;
-let tunelX = 0.04, tunelY = 0.55;
+let progresoPortada = 0;
+let progresoRespira = 0;
+let tunelX = 0.04;
+let tunelY = 0.55;
 let ultimoGolpe = 0;
-
 let pointerActivo = false;
+let startX = 0;
+let startY = 0;
+let ultimaX = 0;
 let ultimaY = 0;
 
-window.addEventListener("pointerdown", e => {
-  pointerActivo = true;
-  ultimaY = e.clientY;
+const sonidos = {};
+Object.entries(SOUND_PATHS).forEach(([key, path]) => {
+  sonidos[key] = new Audio(path);
+  sonidos[key].loop = !["bump", "ballTap", "playBall"].includes(key);
+  sonidos[key].volume = 0;
+});
 
-  if(!sonidoActivo){
-    encenderSonido();
+function setVol(name, value) {
+  if (!sonidos[name]) return;
+  const v = modoSensible ? value * 0.45 : value;
+  sonidos[name].volume = Math.max(0, Math.min(v, 1));
+}
+
+function bajarTodosLosSonidos() {
+  Object.keys(sonidos).forEach((key) => setVol(key, 0));
+}
+
+function playOneShot(name, vol = 0.6) {
+  if (!sonidoActivo || !sonidos[name]) return;
+  const s = sonidos[name];
+  s.currentTime = 0;
+  s.volume = modoSensible ? vol * 0.45 : vol;
+  s.play().catch(() => {});
+}
+
+function encenderSonido() {
+  sonidoActivo = true;
+  Object.values(sonidos).forEach((s) => s.play().catch(() => {}));
+  btnSonido.textContent = "🔇";
+  avisoAudio.style.opacity = 0;
+  setTimeout(() => avisoAudio.classList.add("oculto"), 600);
+  actualizarAudioPorEscena();
+}
+
+function apagarSonido() {
+  sonidoActivo = false;
+  Object.values(sonidos).forEach((s) => {
+    s.pause();
+    s.currentTime = 0;
+    s.volume = 0;
+  });
+  btnSonido.textContent = "🔊";
+}
+
+function vibrar(patron) {
+  if (!modoSensible && navigator.vibrate) {
+    navigator.vibrate(patron);
+  } else {
+    app.classList.add("vibracionVisual");
+    setTimeout(() => app.classList.remove("vibracionVisual"), 300);
   }
+}
+
+function flashRapido() {
+  if (modoSensible) return;
+  flash.style.opacity = 0.32;
+  setTimeout(() => { flash.style.opacity = 0; }, 120);
+}
+
+function setTexto(t, i, c) {
+  titulo.textContent = t;
+  instruccion.textContent = i;
+  cuento.textContent = c;
+}
+
+function mostrar(el, src, left, top, width) {
+  el.src = src;
+  el.classList.remove("oculto");
+  el.style.left = left;
+  el.style.top = top;
+  el.style.width = width;
+  el.style.transform = "translate(-50%,-50%)";
+  el.style.opacity = 1;
+}
+
+function ocultarTodo() {
+  [timo, tronco, pelota, mono, conejo, pajaro, mariposa, luciernagasDibujo].forEach((el) => {
+    el.className = el.classList.contains("personaje") ? "personaje oculto" : "capa oculto";
+    el.removeAttribute("style");
+    if (el.tagName === "IMG") el.src = "";
+  });
+  ayEco.className = "oculto";
+  luciernagasCampo.innerHTML = "";
+}
+
+function crearLuciernagas(cantidad = 18, foco = { x: 50, y: 50, radio: 30 }) {
+  luciernagasCampo.innerHTML = "";
+  for (let i = 0; i < cantidad; i++) {
+    const luz = document.createElement("span");
+    luz.className = "luciernaga";
+    const ang = Math.random() * Math.PI * 2;
+    const r = Math.random() * foco.radio;
+    luz.style.left = `${foco.x + Math.cos(ang) * r}%`;
+    luz.style.top = `${foco.y + Math.sin(ang) * r}%`;
+    luz.style.animationDelay = `${Math.random() * 4}s`;
+    luz.style.animationDuration = `${3 + Math.random() * 4}s`;
+    luciernagasCampo.appendChild(luz);
+  }
+}
+
+function intensidadLuciernagas(v) {
+  luciernagasCampo.style.opacity = v;
+  if (!luciernagasDibujo.classList.contains("oculto")) luciernagasDibujo.style.opacity = v;
+}
+
+function clima({ os = 0.5, ruidoOp = 0.1, brillo = 1, sat = 1, contraste = 1, color = "transparent", colorOp = 0.2 }) {
+  oscuridad.style.opacity = os;
+  ruido.style.opacity = ruidoOp;
+  fondo.style.filter = `brightness(${brillo}) saturate(${sat}) contrast(${contraste})`;
+  cieloColor.style.background = color;
+  cieloColor.style.opacity = colorOp;
+}
+
+function actualizarBotones() {
+  document.querySelectorAll("#menu [data-scene]").forEach((b) => {
+    b.classList.toggle("activo", b.dataset.scene === escenaActual);
+  });
+}
+
+function actualizarAudioPorEscena() {
+  if (!sonidoActivo) return;
+  bajarTodosLosSonidos();
+  if (escenaActual === "portada") audioPortada();
+  if (escenaActual === "respira") audioRespira();
+  if (escenaActual === "tunel") audioTunel();
+  if (escenaActual === "final") audioFinal();
+}
+
+function audioPortada() {
+  const estres = 1 - progresoPortada;
+  const calma = progresoPortada;
+  setVol("stressLow", 0.45 * estres);
+  setVol("stressHigh", 0.32 * estres);
+  setVol("stressNoise", 0.34 * estres);
+  setVol("heartbeatFast", 0.58 * estres);
+  setVol("tunnelEcho", 0.28 * estres);
+  setVol("rollingBall", 0.18 * estres);
+  setVol("calmAir", 0.55 * calma);
+  setVol("fireflies", 0.12 + 0.45 * calma);
+  setVol("softChimes", 0.22 * calma);
+  setVol("heartbeatSoft", 0.28 * calma);
+}
+
+function audioRespira() {
+  const calma = progresoRespira;
+  const tension = 1 - calma;
+  setVol("heartbeatFast", 0.55 * tension);
+  setVol("heartbeatSoft", 0.25 + 0.35 * calma);
+  setVol("deepBreath", 0.25 + 0.5 * calma);
+  setVol("calmAir", 0.18 + 0.55 * calma);
+  setVol("fireflies", 0.2 + 0.35 * calma);
+  setVol("butterfly", 0.14 + 0.15 * calma);
+}
+
+function audioTunel() {
+  const d = distanciaAPelota();
+  const cerca = 1 - Math.min(d / 0.55, 1);
+  setVol("heartbeatFast", 0.22 + 0.45 * (1 - cerca));
+  setVol("heartbeatSoft", 0.35 * cerca);
+  setVol("tunnelEcho", 0.58 * (1 - cerca) + 0.15);
+  setVol("rollingBall", 0.2 + 0.25 * cerca);
+  setVol("calmAir", 0.18 * cerca);
+}
+
+function audioFinal() {
+  setVol("happyWind", 0.5);
+  setVol("forest", 0.5);
+  setVol("fireflies", 0.55);
+  setVol("softChimes", 0.35);
+  setVol("butterfly", 0.22);
+  setVol("softLaughs", 0.18);
+}
+
+function cargarEscena(nombre) {
+  escenaActual = nombre;
+  progresoPortada = 0;
+  progresoRespira = 0;
+  estadoPortada = "oscuro";
+  tunelX = 0.04;
+  tunelY = 0.55;
+  ocultarTodo();
+  actualizarBotones();
+  spotLuz.style.opacity = 1;
+  spotLuz.style.transform = "translate(-50%,-50%)";
+  spotLuz.style.left = "50%";
+  spotLuz.style.top = "50%";
+
+  if (nombre === "portada") escenaPortada();
+  if (nombre === "respira") escenaRespira();
+  if (nombre === "tunel") escenaTunel();
+  if (nombre === "final") escenaFinal();
+  actualizarAudioPorEscena();
+}
+
+function escenaPortada() {
+  fondo.src = ASSETS.portada.fondo;
+  clima({ os: 0.94, ruidoOp: 0.32, brillo: 0.42, sat: 0.62, contraste: 1.15, color: "#07111f", colorOp: 0.25 });
+  crearLuciernagas(12, { x: 18, y: 63, radio: 10 });
+  mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "24vw");
+  mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
+  timo.classList.add("temblar");
+  spotLuz.style.left = "18%";
+  spotLuz.style.top = "63%";
+  spotLuz.style.opacity = 1;
+  setTexto("", "Toca suave", "Timo salió al mundo, pero todo se sintió demasiado fuerte.");
+}
+
+function tocarPortada() {
+  if (estadoPortada !== "oscuro") return;
+  estadoPortada = "regular";
+  if (!sonidoActivo) encenderSonido();
+  vibrar([80, 40, 120]);
+  flashRapido();
+  timo.classList.remove("temblar");
+  timo.classList.add("rodarFuera");
+  luciernagasDibujo.style.left = "110%";
+  spotLuz.style.left = "110%";
+  setTexto("¡Uy!", "Desliza despacio para que Timo vuelva", "Timo se hizo bolita para protegerse. Necesitó que el mundo bajara su intensidad.");
+  setVol("stressHigh", 0.7);
+  setVol("stressNoise", 0.6);
+  setVol("rollingBall", 0.62);
+}
+
+function regularPortada(delta) {
+  progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 900));
+  const p = progresoPortada;
+  clima({ os: 0.94 - p * 0.86, ruidoOp: 0.32 - p * 0.30, brillo: 0.42 + p * 0.68, sat: 0.62 + p * 0.35, contraste: 1.15 - p * 0.1, color: "#ffb36b", colorOp: 0.08 + p * 0.18 });
+  intensidadLuciernagas(0.35 + p * 0.6);
+  spotLuz.style.left = `${18 + p * 19}%`;
+  spotLuz.style.top = `${63 - p * 3}%`;
+  spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p * 1.1})`;
+  luciernagasDibujo.style.left = `${18 + p * 18}%`;
+  luciernagasDibujo.style.top = `${63 - p * 4}%`;
+  luciernagasDibujo.style.width = `${24 + p * 7}vw`;
+
+  if (p > 0.22 && !timo.classList.contains("volver")) {
+    timo.classList.remove("rodarFuera");
+    timo.classList.add("volver");
+  }
+
+  if (p > 0.95 && estadoPortada !== "calma") {
+    timo.classList.remove("volver", "temblar", "rodarFuera");
+    mostrar(timo, ASSETS.portada.abierto, "36%", "59%", "19vw");
+    setTexto("", "Gracias por esperar", "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar.");
+    estadoPortada = "calma";
+  }
+  audioPortada();
+}
+
+function escenaRespira() {
+  fondo.src = ASSETS.respira.fondo;
+  clima({ os: 0.46, ruidoOp: 0.12, brillo: 0.75, sat: 0.78, contraste: 1.05, color: "#f0b67a", colorOp: 0.18 });
+  crearLuciernagas(16, { x: 33, y: 62, radio: 18 });
+  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "28vw");
+  timo.classList.add("balancito");
+  mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "7vw");
+  mariposa.classList.add("flotar");
+  mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "9vw");
+  pajaro.classList.add("flotar");
+  mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "24vw");
+  spotLuz.style.left = "24%";
+  spotLuz.style.top = "62%";
+  setTexto("Respira", "Desliza lento con Timo", "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro.");
+}
+
+function moverRespira(delta) {
+  progresoRespira = Math.max(0, Math.min(1, progresoRespira + Math.abs(delta) / 900));
+  const p = progresoRespira;
+  const x = 24 + p * 42;
+  const y = 62 - p * 6;
+  timo.style.left = `${x}%`;
+  timo.style.top = `${y}%`;
+  timo.style.width = `${28 - p * 4}vw`;
+  luciernagasDibujo.style.left = `${x}%`;
+  luciernagasDibujo.style.top = `${y - 4}%`;
+  mariposa.style.left = `${18 + p * 40}%`;
+  mariposa.style.top = `${40 - p * 8}%`;
+  pajaro.style.left = `${12 + p * 55}%`;
+  pajaro.style.top = `${28 + p * 2}%`;
+  spotLuz.style.left = `${x}%`;
+  spotLuz.style.top = `${y}%`;
+  spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p * 0.75})`;
+  clima({ os: 0.46 - p * 0.34, ruidoOp: 0.12 - p * 0.1, brillo: 0.75 + p * 0.28, sat: 0.78 + p * 0.22, contraste: 1.05 - p * 0.05, color: "#f7c47d", colorOp: 0.18 + p * 0.18 });
+  intensidadLuciernagas(0.38 + p * 0.45);
+  if (p > 0.88) {
+    setTexto("Respira", "Timo se asoma", "El miedo apareció, pero ya no ocupaba todo el espacio.");
+  }
+  audioRespira();
+}
+
+function escenaTunel() {
+  fondo.src = ASSETS.tunel.fondo;
+  clima({ os: 0.34, ruidoOp: 0.16, brillo: 0.75, sat: 0.82, contraste: 1.12, color: "#de7d4f", colorOp: 0.20 });
+  crearLuciernagas(8, { x: 20, y: 64, radio: 12 });
+  mostrar(timo, ASSETS.tunel.bolita, "13%", "68%", "12vw");
+  mostrar(pelota, ASSETS.tunel.pelota, "82%", "68%", "9vw");
+  pelota.classList.add("flotar");
+  spotLuz.style.left = "13%";
+  spotLuz.style.top = "68%";
+  setTexto("El túnel", "Inclina el celular o usa flechas para avanzar", "Lo que parecía un obstáculo, era justo el camino que él entendía mejor.");
+  actualizarTimoTunel();
+}
+
+function distanciaAPelota() {
+  const dx = 0.82 - tunelX;
+  const dy = 0.68 - tunelY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function actualizarTimoTunel() {
+  const x = 10 + tunelX * 80;
+  const y = 25 + tunelY * 70;
+  timo.style.left = `${x}%`;
+  timo.style.top = `${y}%`;
+  timo.style.transform = `translate(-50%,-50%) rotate(${tunelX * 720}deg)`;
+  spotLuz.style.left = `${x}%`;
+  spotLuz.style.top = `${y}%`;
+  const d = distanciaAPelota();
+  const cerca = 1 - Math.min(d / 0.55, 1);
+  clima({ os: 0.34 - cerca * 0.18, ruidoOp: 0.16 - cerca * 0.1, brillo: 0.75 + cerca * 0.23, sat: 0.82 + cerca * 0.18, contraste: 1.12 - cerca * 0.07, color: "#cf6e52", colorOp: 0.22 - cerca * 0.07 });
+  intensidadLuciernagas(0.18 + cerca * 0.38);
+  if (d < 0.08) {
+    playOneShot("ballTap", 0.6);
+    vibrar(35);
+    setTexto("¡Toc!", "Lo logró a su manera", "La pelota sonó suave dentro del túnel.");
+  }
+  audioTunel();
+}
+
+function golpeTunel() {
+  const now = Date.now();
+  if (now - ultimoGolpe < 800) return;
+  ultimoGolpe = now;
+  playOneShot("bump", 0.75);
+  vibrar([40, 30, 60]);
+  ayEco.className = "";
+  setTimeout(() => ayEco.classList.add("oculto"), 1100);
+  setVol("heartbeatFast", 0.75);
+  setVol("tunnelEcho", 0.7);
+}
+
+function moverTunelPorInclinacion(gamma, beta) {
+  const oldX = tunelX;
+  const oldY = tunelY;
+  tunelX += gamma / 2600;
+  tunelY += (beta - 45) / 5200;
+  if (tunelX < 0 || tunelX > 1 || tunelY < 0.15 || tunelY > 0.9) golpeTunel();
+  tunelX = Math.max(0, Math.min(1, tunelX));
+  tunelY = Math.max(0.15, Math.min(0.9, tunelY));
+  if (Math.abs(oldX - tunelX) + Math.abs(oldY - tunelY) > 0.001) actualizarTimoTunel();
+}
+
+function moverTunelDesktop(dx, dy = 0) {
+  tunelX += dx;
+  tunelY += dy;
+  if (tunelX < 0 || tunelX > 1 || tunelY < 0.15 || tunelY > 0.9) golpeTunel();
+  tunelX = Math.max(0, Math.min(1, tunelX));
+  tunelY = Math.max(0.15, Math.min(0.9, tunelY));
+  actualizarTimoTunel();
+}
+
+function escenaFinal() {
+  fondo.src = ASSETS.final.fondo;
+  clima({ os: 0.18, ruidoOp: 0, brillo: 0.78, sat: 1.05, contraste: 1.05, color: "#16264d", colorOp: 0.35 });
+  crearLuciernagas(34, { x: 50, y: 55, radio: 45 });
+  mostrar(luciernagasDibujo, ASSETS.final.luciernagas, "50%", "56%", "70vw");
+  mostrar(timo, ASSETS.final.timo, "30%", "66%", "15vw");
+  mostrar(mono, ASSETS.final.mono, "68%", "38%", "18vw");
+  mono.classList.add("flotar");
+  mostrar(conejo, ASSETS.final.conejo, "18%", "72%", "13vw");
+  conejo.classList.add("flotar");
+  mostrar(pajaro, ASSETS.final.pajaro, "54%", "24%", "9vw");
+  pajaro.classList.add("flotar");
+  mostrar(mariposa, ASSETS.final.mariposa, "46%", "50%", "7vw");
+  mariposa.classList.add("flotar");
+  mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "8vw");
+  pelota.classList.add("pelotaInteractiva");
+  spotLuz.style.left = "50%";
+  spotLuz.style.top = "55%";
+  spotLuz.style.transform = "translate(-50%,-50%) scale(2.6)";
+  intensidadLuciernagas(0.9);
+  setTexto("Todos jugamos", "Toca la pelota para lanzarla", "No todos nos movemos igual… pero todos merecemos jugar.");
+  audioFinal();
+}
+
+function lanzarPelota() {
+  if (escenaActual !== "final") return;
+  pelota.classList.remove("saltarPelota");
+  void pelota.offsetWidth;
+  pelota.classList.add("saltarPelota");
+  playOneShot("playBall", 0.75);
+  playOneShot("softLaughs", 0.35);
+  setVol("happyWind", 0.65);
+  vibrar(35);
+  setTexto("¡La lanzaste!", "Toca otra vez la pelota", "Ahora tú también juegas con Timo.");
+}
+
+function manejarTapGlobal(e) {
+  if (e.target.closest("#menu")) return;
+  if (e.target === pelota && escenaActual === "final") return;
+  if (!sonidoActivo) encenderSonido();
+  if (escenaActual === "portada" && estadoPortada === "oscuro") tocarPortada();
+  if (escenaActual === "final") {
+    intensidadLuciernagas(1);
+    setTimeout(() => intensidadLuciernagas(0.9), 500);
+  }
+}
+
+window.addEventListener("pointerdown", (e) => {
+  pointerActivo = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  ultimaX = e.clientX;
+  ultimaY = e.clientY;
 });
 
 window.addEventListener("pointerup", () => {
@@ -87,486 +520,78 @@ window.addEventListener("pointercancel", () => {
   pointerActivo = false;
 });
 
-window.addEventListener("pointermove", e => {
-  if(!pointerActivo) return;
-
-  const diferencia = ultimaY - e.clientY;
+window.addEventListener("pointermove", (e) => {
+  if (!pointerActivo) return;
+  const dx = e.clientX - ultimaX;
+  const dy = ultimaY - e.clientY;
+  ultimaX = e.clientX;
   ultimaY = e.clientY;
 
-  if(Math.abs(diferencia) < 2) return;
-
-  if(escenaActual === "portada" && estadoPortada === "regular"){
-    progreso += diferencia / 900;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarPortadaConProgreso();
+  if (escenaActual === "portada" && estadoPortada === "regular" && Math.abs(dy) > 1) {
+    regularPortada(Math.max(dy, 0));
   }
 
-  if(escenaActual === "respira"){
-    progreso += diferencia / 900;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarRespiraConProgreso();
+  if (escenaActual === "respira" && Math.abs(dy) > 1) {
+    moverRespira(Math.abs(dy));
   }
-}
 
-const sonidos = {};
-Object.entries(SOUND_PATHS).forEach(([key, path]) => {
-  sonidos[key] = new Audio(path);
-  sonidos[key].loop = !["bump", "ballTap"].includes(key);
-  sonidos[key].volume = 0;
+  if (escenaActual === "tunel") {
+    moverTunelDesktop(dx / 900, -dy / 1200);
+  }
 });
 
-function setVol(name, value){
-  if(!sonidos[name]) return;
-  sonidos[name].volume = Math.max(0, Math.min(modoSensible ? value * .45 : value, 1));
-}
-function bajarTodosLosSonidos(){Object.keys(sonidos).forEach(k => setVol(k,0));}
-function playOneShot(name, vol=.6){
-  if(!sonidoActivo || !sonidos[name]) return;
-  const s = sonidos[name];
-  s.currentTime = 0;
-  s.volume = modoSensible ? vol*.45 : vol;
-  s.play().catch(()=>{});
-}
-function encenderSonido(){
-  sonidoActivo = true;
-  Object.values(sonidos).forEach(s => s.play().catch(()=>{}));
-  btnSonido.textContent = "🔇";
-  avisoAudio.style.opacity = 0;
-  setTimeout(()=> avisoAudio.classList.add("oculto"), 600);
-  actualizarAudioPorEscena();
-}
-function apagarSonido(){
-  sonidoActivo = false;
-  Object.values(sonidos).forEach(s => {s.pause(); s.currentTime = 0; s.volume = 0;});
-  btnSonido.textContent = "🔊";
-}
-function vibrar(patron){ if(!modoSensible && navigator.vibrate) navigator.vibrate(patron); }
-function flashRapido(){ if(modoSensible) return; flash.style.opacity=.32; setTimeout(()=>flash.style.opacity=0,120); }
-function setTexto(t,i,c){titulo.textContent=t; instruccion.textContent=i; cuento.textContent=c;}
-function mostrar(el, src, left, top, width){el.src=src; el.classList.remove("oculto"); el.style.left=left; el.style.top=top; el.style.width=width; el.style.transform="translate(-50%,-50%)"; el.style.opacity=1;}
-function ocultarTodo(){
-  [timo,tronco,pelota,mono,conejo,pajaro,mariposa,luciernagasDibujo,ayEco].forEach(el=>{
-    el.className = el.classList.contains("personaje") ? "personaje oculto" : "capa oculto";
-    el.removeAttribute("style");
-    if(el.tagName === "IMG") el.src="";
-  });
-  luciernagasCampo.innerHTML="";
-}
-function crearLuciernagas(cantidad=18, foco={x:50,y:50,radio:30}){
-  luciernagasCampo.innerHTML="";
-  for(let i=0;i<cantidad;i++){
-    const luz=document.createElement("span");
-    luz.className="luciernaga";
-    const ang=Math.random()*Math.PI*2;
-    const r=Math.random()*foco.radio;
-    luz.style.left=`${foco.x + Math.cos(ang)*r}%`;
-    luz.style.top=`${foco.y + Math.sin(ang)*r}%`;
-    luz.style.animationDelay=`${Math.random()*4}s`;
-    luz.style.animationDuration=`${3+Math.random()*4}s`;
-    luciernagasCampo.appendChild(luz);
+window.addEventListener("wheel", (e) => {
+  const delta = -e.deltaY;
+  if (escenaActual === "portada" && estadoPortada === "regular") regularPortada(Math.max(delta, 0));
+  if (escenaActual === "respira") moverRespira(Math.abs(delta));
+});
+
+window.addEventListener("click", manejarTapGlobal);
+
+window.addEventListener("deviceorientation", (e) => {
+  if (escenaActual === "tunel") moverTunelPorInclinacion(e.gamma || 0, e.beta || 45);
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "1") cargarEscena("portada");
+  if (e.key === "2") cargarEscena("respira");
+  if (e.key === "3") cargarEscena("tunel");
+  if (e.key === "4") cargarEscena("final");
+  if (e.code === "Space") manejarTapGlobal({ target: document.body });
+
+  if (escenaActual === "tunel") {
+    if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") moverTunelDesktop(0.035, 0);
+    if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") moverTunelDesktop(-0.035, 0);
+    if (e.key === "ArrowUp" || e.key.toLowerCase() === "w") moverTunelDesktop(0, -0.025);
+    if (e.key === "ArrowDown" || e.key.toLowerCase() === "s") moverTunelDesktop(0, 0.025);
   }
-}
-function intensidadLuciernagas(v){luciernagasCampo.style.opacity=v; luciernagasDibujo.style.opacity=v;}
-function clima({os=.5, ruidoOp=.1, brillo=1, sat=1, contraste=1, color="transparent", colorOp=.2}){
-  oscuridad.style.opacity=os;
-  ruido.style.opacity=ruidoOp;
-  fondo.style.filter=`brightness(${brillo}) saturate(${sat}) contrast(${contraste})`;
-  cieloColor.style.background=color;
-  cieloColor.style.opacity=colorOp;
-}
-function actualizarBotones(){document.querySelectorAll("#menu [data-scene]").forEach(b=>b.classList.toggle("activo", b.dataset.scene===escenaActual));}
+});
 
-function actualizarAudioPorEscena(){
-  if(!sonidoActivo) return;
-  bajarTodosLosSonidos();
-  if(escenaActual === "portada") audioPortada();
-  if(escenaActual === "respira") audioRespira();
-  if(escenaActual === "tunel") audioTunel();
-  if(escenaActual === "final") audioFinal();
-}
-function audioPortada(){
-  const estres = 1 - progreso, calma = progreso;
-  setVol("stressLow", .45*estres); setVol("stressHigh", .32*estres); setVol("stressNoise", .34*estres);
-  setVol("heartbeatFast", .58*estres); setVol("tunnelEcho", .28*estres); setVol("rollingBall", .18*estres);
-  setVol("calmAir", .55*calma); setVol("fireflies", .12 + .45*calma); setVol("softChimes", .22*calma); setVol("heartbeatSoft", .28*calma);
-}
-function audioRespira(){
-  const calma = respiraProgreso, tension = 1-calma;
-  setVol("heartbeatFast", .55*tension); setVol("heartbeatSoft", .25 + .35*calma); setVol("deepBreath", .25 + .5*calma);
-  setVol("calmAir", .18 + .55*calma); setVol("fireflies", .2 + .35*calma); setVol("butterfly", .14 + .15*calma);
-}
-function audioTunel(){
-  const d = distanciaAPelota(); const cerca = 1 - Math.min(d/.55,1);
-  setVol("heartbeatFast", .22 + .45*(1-cerca)); setVol("heartbeatSoft", .35*cerca);
-  setVol("tunnelEcho", .58*(1-cerca)+.15); setVol("rollingBall", .2 + .25*cerca); setVol("calmAir", .18*cerca);
-}
-function audioFinal(){
-  setVol("happyWind", .5); setVol("forest", .5); setVol("fireflies", .55); setVol("softChimes", .35); setVol("butterfly", .22); setVol("playBall", .25); setVol("softLaughs", .18);
-}
-
-function cargarEscena(nombre){
-  escenaActual=nombre; progreso=0; respiraProgreso=0; estadoPortada="oscuro"; tunelX=.04; tunelY=.55;
-  ocultarTodo(); actualizarBotones();
-  spotLuz.style.opacity=1; spotLuz.style.transform="translate(-50%,-50%)";
-  if(nombre==="portada") escenaPortada();
-  if(nombre==="respira") escenaRespira();
-  if(nombre==="tunel") escenaTunel();
-  if(nombre==="final") escenaFinal();
-  actualizarAudioPorEscena();
-}
-
-function escenaPortada(){
-  fondo.src=ASSETS.portada.fondo;
-  clima({os:.94, ruidoOp:.32, brillo:.42, sat:.62, contraste:1.15, color:"#07111f", colorOp:.25});
-  crearLuciernagas(12,{x:18,y:63,radio:10});
-  mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "24vw");
-  mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
-  timo.classList.add("temblar");
-  spotLuz.style.left="18%"; spotLuz.style.top="63%"; spotLuz.style.opacity=1;
-  setTexto("", "Toca suave", "Timo salió al mundo, pero todo se sintió demasiado fuerte.");
-  vibrar([30,80,30,120]);
-}
-function tocarPortada(){
-  estadoPortada="asustado"; if(!sonidoActivo) encenderSonido(); vibrar([80,40,120]); flashRapido();
-  setVol("stressHigh", .7); setVol("stressNoise", .6); setVol("rollingBall", .62);
-  timo.classList.remove("temblar"); timo.classList.add("rodarFuera");
-  luciernagasDibujo.style.left="110%"; spotLuz.style.left="110%";
-  setTexto("¡Uy!", "Desliza despacio", "Timo se hizo bolita para protegerse.");
-  setTimeout(()=>estadoPortada="regular", 900);
-}
-
-if(escenaActual === "portada" && estadoPortada === "oscuro"){
-  estadoPortada = "regular";
-
-  vibrar([80,40,120]);
-  flashRapido();
-
-  timo.classList.remove("temblar");
-  timo.classList.add("rodarFuera");
-
-  if(sonidoActivo){
-    sonidos.stressHigh.volume = .65;
-    sonidos.stressNoise.volume = .55;
-    sonidos.rollingBall.volume = .55;
-  }
-
-  setTexto(
-    "¡Uy!",
-    "Desliza despacio para que Timo vuelva",
-    "Cuando todo fue demasiado, Timo necesitó tiempo y suavidad."
-  );
-}
-
-function regularPortada(delta){
-  progreso = Math.min(1, progreso + delta/1200);
-  const p=progreso;
-  clima({os:.94 - p*.86, ruidoOp:.32 - p*.30, brillo:.42 + p*.68, sat:.62+p*.35, contraste:1.15-p*.1, color:"#ffb36b", colorOp:.08+p*.18});
-  intensidadLuciernagas(.35+p*.6);
-  spotLuz.style.left=`${18+p*19}%`; spotLuz.style.top=`${63-p*3}%`; spotLuz.style.transform=`translate(-50%,-50%) scale(${1+p*1.1})`;
-  luciernagasDibujo.style.left=`${18+p*18}%`; luciernagasDibujo.style.top=`${63-p*4}%`; luciernagasDibujo.style.width=`${24+p*7}vw`;
-  if(p>.22 && !timo.classList.contains("volver")){timo.classList.remove("rodarFuera"); timo.classList.add("volver");}
-  if(p>.95){
-    timo.src=ASSETS.portada.abierto; timo.classList.remove("volver"); mostrar(timo, ASSETS.portada.abierto, "36%", "59%", "19vw");
-    setTexto("", "Gracias por esperar", "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar.");
-    estadoPortada="calma";
-  }
-  audioPortada();
-}
-function actualizarPortadaConProgreso(){
-
-  oscuridad.style.opacity = 0.92 - progreso * 0.9;
-  ruido.style.opacity = 0.32 - progreso * 0.32;
-
-  fondo.style.filter =
-    `brightness(${0.38 + progreso * 0.75})
-     saturate(${0.55 + progreso * 0.55})
-     contrast(${1.15 - progreso * 0.12})`;
-
-  intensidadLuciernagas(0.25 + progreso * 0.75);
-
-  if(sonidoActivo){
-    regularAudioPortada();
-  }
-
-  if(progreso > .18 && !timo.classList.contains("volver")){
-    timo.classList.remove("rodarFuera");
-    timo.classList.add("volver");
-  }
-
-  if(progreso > .95 && estadoPortada !== "calma"){
-    timo.src = "assets/portada/timo_open.png";
-    timo.classList.remove("volver", "temblar");
-    timo.style.left = "35%";
-    timo.style.top = "58%";
-    timo.style.width = "18vw";
-
-    setTexto(
-      "Gracias",
-      "El mundo bajó un poquito",
-      "Timo pudo desenroscarse cuando la luz y los sonidos se hicieron más suaves."
-    );
-
-    estadoPortada = "calma";
-  }
-}
-
-function escenaRespira(){
-  fondo.src=ASSETS.respira.fondo;
-  clima({os:.46, ruidoOp:.12, brillo:.75, sat:.78, contraste:1.05, color:"#f0b67a", colorOp:.18});
-  crearLuciernagas(16,{x:33,y:62,radio:18});
-  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "28vw");
-  timo.classList.add("balancito");
-  mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "7vw"); mariposa.classList.add("flotar");
-  mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "9vw"); pajaro.classList.add("flotar");
-  mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "24vw");
-  spotLuz.style.left="24%"; spotLuz.style.top="62%";
-  setTexto("Respira", "Desliza lento con Timo", "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro.");
-}
-function moverRespira(delta){
-  respiraProgreso=Math.min(1, respiraProgreso+delta/1300);
-  const p=respiraProgreso;
-  const x=24+p*42, y=62-p*6;
-  timo.style.left=`${x}%`; timo.style.top=`${y}%`; timo.style.width=`${28-p*4}vw`;
-  luciernagasDibujo.style.left=`${x}%`; luciernagasDibujo.style.top=`${y-4}%`;
-  mariposa.style.left=`${18+p*40}%`; mariposa.style.top=`${40-p*8}%`;
-  pajaro.style.left=`${12+p*55}%`; pajaro.style.top=`${28+p*2}%`;
-  spotLuz.style.left=`${x}%`; spotLuz.style.top=`${y}%`; spotLuz.style.transform=`translate(-50%,-50%) scale(${1+p*.75})`;
-  clima({os:.46-p*.34, ruidoOp:.12-p*.1, brillo:.75+p*.28, sat:.78+p*.22, contraste:1.05-p*.05, color:"#f7c47d", colorOp:.18+p*.18});
-  intensidadLuciernagas(.38+p*.45);
-  if(p>.88){setTexto("Respira", "Timo se asoma", "El miedo apareció, pero ya no ocupaba todo el espacio.");}
-  audioRespira();
-}
-
-function escenaTunel(){
-  fondo.src=ASSETS.tunel.fondo;
-  clima({os:.34, ruidoOp:.16, brillo:.75, sat:.82, contraste:1.12, color:"#de7d4f", colorOp:.20});
-  crearLuciernagas(8,{x:20,y:64,radio:12});
-  mostrar(timo, ASSETS.tunel.bolita, "13%", "68%", "12vw");
-  mostrar(pelota, ASSETS.tunel.pelota, "82%", "68%", "9vw"); pelota.classList.add("flotar");
-  spotLuz.style.left="13%"; spotLuz.style.top="68%";
-  setTexto("El túnel", "Inclina el celular para avanzar", "Lo que parecía un obstáculo, era justo el camino que él entendía mejor.");
-  actualizarTimoTunel();
-}
-function distanciaAPelota(){const dx=.82-tunelX, dy=.68-tunelY; return Math.sqrt(dx*dx+dy*dy);}
-function actualizarTimoTunel(){
-  const x=10+tunelX*80, y=25+tunelY*70;
-  timo.style.left=`${x}%`; timo.style.top=`${y}%`; timo.style.transform=`translate(-50%,-50%) rotate(${tunelX*720}deg)`;
-  spotLuz.style.left=`${x}%`; spotLuz.style.top=`${y}%`;
-  const d=distanciaAPelota(), cerca=1-Math.min(d/.55,1);
-  clima({os:.34-cerca*.18, ruidoOp:.16-cerca*.1, brillo:.75+cerca*.23, sat:.82+cerca*.18, contraste:1.12-cerca*.07, color:"#cf6e52", colorOp:.22-cerca*.07});
-  intensidadLuciernagas(.18+cerca*.38);
-  if(d<.08){playOneShot("ballTap",.6); vibrar(35); setTexto("¡Toc!", "Lo logró a su manera", "La pelota sonó suave dentro del túnel.");}
-  audioTunel();
-}
-function golpeTunel(){
-  const now=Date.now(); if(now-ultimoGolpe<800) return; ultimoGolpe=now;
-  playOneShot("bump",.75); vibrar([40,30,60]); ayEco.className=""; setTimeout(()=>ayEco.classList.add("oculto"),1100);
-  setVol("heartbeatFast",.75); setVol("tunnelEcho",.7);
-}
-function moverTunelPorInclinacion(gamma,beta){
-  const oldX=tunelX, oldY=tunelY;
-  tunelX += gamma/2600; tunelY += (beta-45)/5200;
-  if(tunelX<0 || tunelX>1 || tunelY<.15 || tunelY>.9) golpeTunel();
-  tunelX=Math.max(0,Math.min(1,tunelX)); tunelY=Math.max(.15,Math.min(.9,tunelY));
-  if(Math.abs(oldX-tunelX)+Math.abs(oldY-tunelY)>.001) actualizarTimoTunel();
-}
-
-function escenaFinal(){
-  fondo.src=ASSETS.final.fondo;
-  clima({os:.18, ruidoOp:0, brillo:.78, sat:1.05, contraste:1.05, color:"#16264d", colorOp:.35});
-  crearLuciernagas(34,{x:50,y:55,radio:45});
-  mostrar(luciernagasDibujo, ASSETS.final.luciernagas, "50%", "56%", "70vw");
-  mostrar(timo, ASSETS.final.timo, "30%", "66%", "15vw");
-  mostrar(mono, ASSETS.final.mono, "68%", "38%", "18vw"); mono.classList.add("flotar");
-  mostrar(conejo, ASSETS.final.conejo, "18%", "72%", "13vw"); conejo.classList.add("flotar");
-  mostrar(pajaro, ASSETS.final.pajaro, "54%", "24%", "9vw"); pajaro.classList.add("flotar");
-  mostrar(mariposa, ASSETS.final.mariposa, "46%", "50%", "7vw"); mariposa.classList.add("flotar");
-  mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "9vw"); pelota.classList.add("pelotaVuelo");
-  spotLuz.style.left="50%"; spotLuz.style.top="55%"; spotLuz.style.transform="translate(-50%,-50%) scale(2.6)";
-  intensidadLuciernagas(.9);
-  setTexto("Todos jugamos", "Toca para celebrar", "No todos nos movemos igual… pero todos merecemos jugar.");
-  audioFinal();
-
-   pelota.classList.remove("oculto");
-   pelota.classList.add("pelotaInteractiva");
-   pelota.src = "assets/final/pelota.png";
-   pelota.style.left = "58%";
-   pelota.style.top = "72%";
-   pelota.style.width = "8vw";
-}
-
-pelota.addEventListener("pointerdown", e => {
+pelota.addEventListener("pointerdown", (e) => {
   e.stopPropagation();
-
-  if(escenaActual !== "final") return;
-
-  pelota.classList.remove("saltarPelota");
-  void pelota.offsetWidth;
-  pelota.classList.add("saltarPelota");
-
-  document.body.classList.add("sacudidaSuave");
-  setTimeout(() => {
-    document.body.classList.remove("sacudidaSuave");
-  }, 300);
-
-  if(sonidoActivo){
-    sonidos.playBall.currentTime = 0;
-    sonidos.playBall.volume = .75;
-    sonidos.happyWind.volume = .65;
-    sonidos.softLaughs.volume = .35;
-  }
-
-  vibrar(35);
-
-  setTexto(
-    "¡La lanzaste!",
-    "Toca otra vez la pelota",
-    "Ahora tú también juegas con Timo."
-  );
-}
-
-window.addEventListener("click", e=>{
-  if(e.target.closest("#menu")) return;
-  if(!sonidoActivo) encenderSonido();
-  if(escenaActual==="portada" && estadoPortada==="oscuro") tocarPortada();
-  else if(escenaActual==="final"){playOneShot("playBall",.55); playOneShot("softLaughs",.35); vibrar(30); intensidadLuciernagas(1); setTimeout(()=>intensidadLuciernagas(.9),500);}
+  if (!sonidoActivo) encenderSonido();
+  lanzarPelota();
 });
-window.addEventListener("touchstart", e=>{startX=e.touches[0].clientX; startY=e.touches[0].clientY; if(!sonidoActivo) encenderSonido();},{passive:true});
-window.addEventListener("touchmove", e=>{
-  const x=e.touches[0].clientX, y=e.touches[0].clientY;
-  const dy=startY-y;
-  if(escenaActual==="portada" && estadoPortada==="regular" && dy>0) regularPortada(dy);
-  if(escenaActual==="respira" && Math.abs(dy)>0) moverRespira(Math.abs(dy));
-  if(escenaActual==="tunel") { tunelX += (x-startX)/6000; tunelY += (y-startY)/5000; actualizarTimoTunel(); }
-  startX=x; startY=y;
-},{passive:true});
-window.addEventListener("deviceorientation", e=>{ if(escenaActual==="tunel") moverTunelPorInclinacion(e.gamma||0, e.beta||45); });
 
-document.querySelectorAll("#menu [data-scene]").forEach(btn=>btn.addEventListener("click",()=>{if(!sonidoActivo) encenderSonido(); cargarEscena(btn.dataset.scene);}));
-btnSonido.addEventListener("click", e=>{e.stopPropagation(); sonidoActivo ? apagarSonido() : encenderSonido();});
-btnSensible.addEventListener("click", e=>{e.stopPropagation(); modoSensible=!modoSensible; app.classList.toggle("modoSensible",modoSensible); btnSensible.classList.toggle("activo",modoSensible); actualizarAudioPorEscena();});
+document.querySelectorAll("#menu [data-scene]").forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!sonidoActivo) encenderSonido();
+    cargarEscena(btn.dataset.scene);
+  });
+});
+
+btnSonido.addEventListener("click", (e) => {
+  e.stopPropagation();
+  sonidoActivo ? apagarSonido() : encenderSonido();
+});
+
+btnSensible.addEventListener("click", (e) => {
+  e.stopPropagation();
+  modoSensible = !modoSensible;
+  app.classList.toggle("modoSensible", modoSensible);
+  btnSensible.classList.toggle("activo", modoSensible);
+  actualizarAudioPorEscena();
+});
 
 cargarEscena("portada");
-
-/* =========================
-   MODO PRUEBA COMPUTADOR
-   ========================= */
-
-let modoDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-let mouseActivo = false;
-let mouseY = 0;
-
-function vibrarVisual(){
-  document.body.classList.add("vibracionVisual");
-  setTimeout(() => {
-    document.body.classList.remove("vibracionVisual");
-  }, 300);
-}
-
-/* Reemplazo visual si no hay vibración física */
-function vibrarSeguro(patron){
-  if(navigator.vibrate){
-    navigator.vibrate(patron);
-  }else{
-    vibrarVisual();
-  }
-}
-
-/* Mouse: simula deslizamiento vertical */
-window.addEventListener("mousedown", e => {
-  mouseActivo = true;
-  mouseY = e.clientY;
-
-  if(!sonidoActivo){
-    encenderSonido();
-  }
-});
-
-window.addEventListener("mouseup", () => {
-  mouseActivo = false;
-});
-
-window.addEventListener("mousemove", e => {
-  if(!modoDesktop || !mouseActivo) return;
-
-  const diferencia = mouseY - e.clientY;
-  mouseY = e.clientY;
-
-  if(Math.abs(diferencia) < 3) return;
-
-  if(escenaActual === "portada" && estadoPortada === "regular"){
-    progreso += diferencia / 1000;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarPortadaConProgreso();
-  }
-
-  if(escenaActual === "respira"){
-    progreso += diferencia / 1000;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarRespiraConProgreso();
-  }
-});
-
-/* Rueda del mouse: simula deslizar */
-window.addEventListener("wheel", e => {
-  if(!modoDesktop) return;
-
-  const delta = -e.deltaY / 900;
-
-  if(escenaActual === "portada" && estadoPortada === "regular"){
-    progreso += delta;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarPortadaConProgreso();
-  }
-
-  if(escenaActual === "respira"){
-    progreso += delta;
-    progreso = Math.max(0, Math.min(1, progreso));
-    actualizarRespiraConProgreso();
-  }
-});
-
-/* Teclado:
-   1-4 cambia escenas
-   espacio = tap
-   flechas / A-D = inclinación túnel
-*/
-window.addEventListener("keydown", e => {
-
-  if(e.key === "1") cargarEscena("portada");
-  if(e.key === "2") cargarEscena("respira");
-  if(e.key === "3") cargarEscena("tunel");
-  if(e.key === "4") cargarEscena("final");
-
-  if(e.code === "Space"){
-    window.dispatchEvent(new Event("click"));
-  }
-
-  if(escenaActual === "tunel"){
-    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d"){
-      moverTunelDesktop(.06);
-    }
-
-    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a"){
-      moverTunelDesktop(-.06);
-    }
-
-    if(e.key === "ArrowUp" || e.key.toLowerCase() === "w"){
-      moverTunelDesktop(.04);
-    }
-
-    if(e.key === "ArrowDown" || e.key.toLowerCase() === "s"){
-      moverTunelDesktop(-.04);
-    }
-  }
-});
-
-function moverTunelDesktop(valor){
-  tunelProgreso += valor;
-  tunelProgreso = Math.max(0, Math.min(1, tunelProgreso));
-  moverTunel(tunelProgreso);
-
-  if(valor < 0){
-    golpeTunel();
-  }
-}
