@@ -309,3 +309,126 @@ btnSonido.addEventListener("click", e=>{e.stopPropagation(); sonidoActivo ? apag
 btnSensible.addEventListener("click", e=>{e.stopPropagation(); modoSensible=!modoSensible; app.classList.toggle("modoSensible",modoSensible); btnSensible.classList.toggle("activo",modoSensible); actualizarAudioPorEscena();});
 
 cargarEscena("portada");
+
+/* =========================
+   MODO PRUEBA COMPUTADOR
+   ========================= */
+
+let modoDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+let mouseActivo = false;
+let mouseY = 0;
+
+function vibrarVisual(){
+  document.body.classList.add("vibracionVisual");
+  setTimeout(() => {
+    document.body.classList.remove("vibracionVisual");
+  }, 300);
+}
+
+/* Reemplazo visual si no hay vibración física */
+function vibrarSeguro(patron){
+  if(navigator.vibrate){
+    navigator.vibrate(patron);
+  }else{
+    vibrarVisual();
+  }
+}
+
+/* Mouse: simula deslizamiento vertical */
+window.addEventListener("mousedown", e => {
+  mouseActivo = true;
+  mouseY = e.clientY;
+
+  if(!sonidoActivo){
+    encenderSonido();
+  }
+});
+
+window.addEventListener("mouseup", () => {
+  mouseActivo = false;
+});
+
+window.addEventListener("mousemove", e => {
+  if(!modoDesktop || !mouseActivo) return;
+
+  const diferencia = mouseY - e.clientY;
+  mouseY = e.clientY;
+
+  if(Math.abs(diferencia) < 3) return;
+
+  if(escenaActual === "portada" && estadoPortada === "regular"){
+    progreso += diferencia / 1000;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarPortadaConProgreso();
+  }
+
+  if(escenaActual === "respira"){
+    progreso += diferencia / 1000;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarRespiraConProgreso();
+  }
+});
+
+/* Rueda del mouse: simula deslizar */
+window.addEventListener("wheel", e => {
+  if(!modoDesktop) return;
+
+  const delta = -e.deltaY / 900;
+
+  if(escenaActual === "portada" && estadoPortada === "regular"){
+    progreso += delta;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarPortadaConProgreso();
+  }
+
+  if(escenaActual === "respira"){
+    progreso += delta;
+    progreso = Math.max(0, Math.min(1, progreso));
+    actualizarRespiraConProgreso();
+  }
+});
+
+/* Teclado:
+   1-4 cambia escenas
+   espacio = tap
+   flechas / A-D = inclinación túnel
+*/
+window.addEventListener("keydown", e => {
+
+  if(e.key === "1") cargarEscena("portada");
+  if(e.key === "2") cargarEscena("respira");
+  if(e.key === "3") cargarEscena("tunel");
+  if(e.key === "4") cargarEscena("final");
+
+  if(e.code === "Space"){
+    window.dispatchEvent(new Event("click"));
+  }
+
+  if(escenaActual === "tunel"){
+    if(e.key === "ArrowRight" || e.key.toLowerCase() === "d"){
+      moverTunelDesktop(.06);
+    }
+
+    if(e.key === "ArrowLeft" || e.key.toLowerCase() === "a"){
+      moverTunelDesktop(-.06);
+    }
+
+    if(e.key === "ArrowUp" || e.key.toLowerCase() === "w"){
+      moverTunelDesktop(.04);
+    }
+
+    if(e.key === "ArrowDown" || e.key.toLowerCase() === "s"){
+      moverTunelDesktop(-.04);
+    }
+  }
+});
+
+function moverTunelDesktop(valor){
+  tunelProgreso += valor;
+  tunelProgreso = Math.max(0, Math.min(1, tunelProgreso));
+  moverTunel(tunelProgreso);
+
+  if(valor < 0){
+    golpeTunel();
+  }
+}
