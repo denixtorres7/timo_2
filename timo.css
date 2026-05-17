@@ -44,6 +44,43 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Ari
 .modoSensible #flash{display:none}.modoSensible #ruido{opacity:.08!important}.modoSensible #oscuridad{transition:opacity 1.8s ease}.modoSensible .temblar{animation-duration:.22s}
 @media (orientation:portrait){#menu{gap:7px;bottom:12px}#menu button{width:44px;height:44px;font-size:20px}#texto{top:4%;width:88%}#cuento{font-size:13px;max-height:86px;overflow:auto}.capa,.personaje{max-width:56vw}}
 
+#app{
+  touch-action:none;
+}
+
+.pelotaInteractiva{
+  cursor:pointer;
+  pointer-events:auto;
+}
+
+.saltarPelota{
+  animation:saltarPelota .85s ease-out;
+}
+
+@keyframes saltarPelota{
+  0%{
+    transform:translate(-50%,-50%) translateY(0) scale(1);
+  }
+  35%{
+    transform:translate(-50%,-50%) translateY(-34vh) scale(1.08);
+  }
+  70%{
+    transform:translate(-50%,-50%) translateY(0) scale(.96);
+  }
+  100%{
+    transform:translate(-50%,-50%) translateY(0) scale(1);
+  }
+}
+
+.sacudidaSuave{
+  animation:sacudidaSuave .12s 3;
+}
+
+@keyframes sacudidaSuave{
+  0%{transform:translate(0,0);}
+  50%{transform:translate(3px,-2px);}
+  100%{transform:translate(-2px,2px);}
+}
 /* MODO PRUEBA COMPUTADOR */
 
 .vibracionVisual #app{
