@@ -608,6 +608,8 @@ function escenaFinal() {
   mostrar(mariposa, ASSETS.final.mariposa, "46%", "50%", "7vw");
   mariposa.classList.add("flotar");
   mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "8vw");
+  turnoPelotaFinal = 0;
+  pelota.style.transition = "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
   pelota.classList.add("pelotaInteractiva");
   spotLuz.style.left = "50%";
   spotLuz.style.top = "55%";
@@ -617,16 +619,47 @@ function escenaFinal() {
   audioFinal();
 }
 
+let turnoPelotaFinal = 0;
+
+const destinosPelotaFinal = [
+  { nombre: "Timo", x: "30%", y: "66%" },
+  { nombre: "Conejo", x: "18%", y: "72%" },
+  { nombre: "Pájaro", x: "54%", y: "24%" },
+  { nombre: "Mariposa", x: "46%", y: "50%" },
+  { nombre: "Mono", x: "68%", y: "38%" }
+];
+
 function lanzarPelota() {
   if (escenaActual !== "final") return;
-  pelota.classList.remove("saltarPelota");
-  void pelota.offsetWidth;
-  pelota.classList.add("saltarPelota");
+
+  const origen = { x: "58%", y: "72%" };
+  const destino = destinosPelotaFinal[turnoPelotaFinal];
+
+  turnoPelotaFinal = (turnoPelotaFinal + 1) % destinosPelotaFinal.length;
+
+  pelota.style.transition =
+    "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
+
+  pelota.style.left = destino.x;
+  pelota.style.top = destino.y;
+  pelota.style.transform = "translate(-50%,-50%) scale(1.15) rotate(180deg)";
+
   playOneShot("playBall", 0.75);
   playOneShot("softLaughs", 0.35);
   setVol("happyWind", 0.65);
   vibrar(35);
-  setTexto("¡La lanzaste!", "Toca otra vez la pelota", "Ahora tú también juegas con Timo.");
+
+  setTexto(
+    "¡Va para " + destino.nombre + "!",
+    "Toca otra vez la pelota",
+    "La pelota vuelve a ti para seguir jugando con todos."
+  );
+
+  setTimeout(() => {
+    pelota.style.left = origen.x;
+    pelota.style.top = origen.y;
+    pelota.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
+  }, 650);
 }
 
 function manejarTapGlobal(e) {
