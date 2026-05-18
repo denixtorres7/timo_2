@@ -809,3 +809,35 @@ btnSensible.addEventListener("click", (e) => {
 });
 
 cargarEscena("portada");
+
+document
+.getElementById("target0")
+.addEventListener("targetFound",()=>{
+
+ cargarEscena("portada");
+
+});
+
+document
+.getElementById("target1")
+.addEventListener("targetFound",()=>{
+
+ cargarEscena("respira");
+
+});
+
+document
+.getElementById("target2")
+.addEventListener("targetFound",()=>{
+
+ cargarEscena("tunel");
+
+});
+
+document
+.getElementById("target3")
+.addEventListener("targetFound",()=>{
+
+ cargarEscena("final");
+
+});
