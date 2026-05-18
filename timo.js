@@ -316,7 +316,7 @@ function escenaPortada(){
 
   crearLuciernagas(12,{x:18,y:63,radio:10});
 
-mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "13vw");
+mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "clamp(80px,16vw,220px)");
   mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
   timo.classList.add("temblar");
   mostrar(conejo, ASSETS.portada.conejo, "73%","72%","clamp(60px,10vw,140px)");
@@ -597,7 +597,13 @@ function escenaFinal() {
   fondo.src = ASSETS.final.fondo;
   clima({ os: 0.18, ruidoOp: 0, brillo: 0.78, sat: 1.05, contraste: 1.05, color: "#16264d", colorOp: 0.35 });
   crearLuciernagas(34, { x: 50, y: 55, radio: 45 });
-  mostrar(luciernagasDibujo, ASSETS.final.luciernagas, "50%", "56%", "70vw");
+mostrar(
+ luciernagasDibujo,
+ ASSETS.final.luciernagas,
+ "50%",
+ "56%",
+ "clamp(120px,24vw,260px)"
+)
   mostrar(timo, ASSETS.final.timo, "30%", "66%", "15vw");
   mostrar(mono, ASSETS.final.mono, "68%", "38%", "18vw");
   mono.classList.add("flotar");
@@ -608,6 +614,7 @@ function escenaFinal() {
   mostrar(mariposa, ASSETS.final.mariposa, "46%", "50%", "7vw");
   mariposa.classList.add("flotar");
   mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "8vw");
+escenaFinal()
   turnoPelotaFinal = 0;
   pelota.style.transition = "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
   pelota.classList.add("pelotaInteractiva");
@@ -618,6 +625,16 @@ function escenaFinal() {
   setTexto("Todos jugamos", "Toca la pelota para lanzarla", "No todos nos movemos igual… pero todos merecemos jugar.");
   audioFinal();
 }
+
+let turnoPelotaFinal = 0;
+
+const destinosPelotaFinal = [
+  { nombre: "Timo", x: "30%", y: "66%" },
+  { nombre: "Conejo", x: "18%", y: "72%" },
+  { nombre: "Pájaro", x: "54%", y: "24%" },
+  { nombre: "Mariposa", x: "46%", y: "50%" },
+  { nombre: "Mono", x: "68%", y: "38%" }
+];
 
 let turnoPelotaFinal = 0;
 
@@ -654,6 +671,13 @@ function lanzarPelota() {
     "Toca otra vez la pelota",
     "La pelota vuelve a ti para seguir jugando con todos."
   );
+
+  setTimeout(() => {
+    pelota.style.left = origen.x;
+    pelota.style.top = origen.y;
+    pelota.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
+  }, 650);
+}
 
   setTimeout(() => {
     pelota.style.left = origen.x;
