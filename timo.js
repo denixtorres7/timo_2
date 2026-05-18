@@ -17,9 +17,6 @@ const ASSETS = {
   respira: {
     fondo: "assets/respira/fondo_color.png",
     timoTronco: "assets/respira/timo_tronco.png",
-    pajaro: "assets/respira/pajaro.png",
-    mariposa: "assets/respira/mariposa.png",
-    luciernagas: "assets/respira/luciernagas.png"
   },
   tunel: {
     fondo: "assets/tunel/fondo_color.png",
@@ -57,6 +54,7 @@ const SOUND_PATHS = {
   butterfly: "sounds/butterfly_flutter.mp3",
   playBall: "sounds/play_ball.mp3",
   softLaughs: "sounds/soft_laughs.mp3"
+  aplausos: "sounds/aplausos.mp3",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -93,6 +91,9 @@ let progresoPortada = 0;
 let progresoRespira = 0;
 let tunelX = 0.04;
 let tunelY = 0.55;
+let pelotaTunelX = 0.82;
+let pelotaTunelY = 0.68;
+let pelotaLibre = false;
 let ultimoGolpe = 0;
 let pointerActivo = false;
 let startX = 0;
@@ -280,6 +281,9 @@ function cargarEscena(nombre) {
   estadoPortada = "oscuro";
   tunelX = 0.04;
   tunelY = 0.55;
+  pelotaTunelX = 0.82;
+  pelotaTunelY = 0.68;
+  pelotaLibre = false;
   ocultarTodo();
   actualizarBotones();
   spotLuz.style.opacity = 1;
@@ -491,6 +495,9 @@ function escenaTunel() {
   crearLuciernagas(8, { x: 20, y: 64, radio: 12 });
   mostrar(timo, ASSETS.tunel.bolita, "13%", "68%", "12vw");
   mostrar(pelota, ASSETS.tunel.pelota, "82%", "68%", "9vw");
+  pelotaTunelX = 0.82;
+pelotaTunelY = 0.68;
+pelotaLibre = false;
   pelota.classList.add("flotar");
   spotLuz.style.left = "13%";
   spotLuz.style.top = "68%";
@@ -499,29 +506,87 @@ function escenaTunel() {
 }
 
 function distanciaAPelota() {
-  const dx = 0.82 - tunelX;
-  const dy = 0.68 - tunelY;
+  const dx = pelotaTunelX - tunelX;
+  const dy = pelotaTunelY - tunelY;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
 function actualizarTimoTunel() {
   const x = 10 + tunelX * 80;
   const y = 25 + tunelY * 70;
+
   timo.style.left = `${x}%`;
   timo.style.top = `${y}%`;
   timo.style.transform = `translate(-50%,-50%) rotate(${tunelX * 720}deg)`;
+
+  const px = 10 + pelotaTunelX * 80;
+  const py = 25 + pelotaTunelY * 70;
+
+  pelota.style.left = `${px}%`;
+  pelota.style.top = `${py}%`;
+
   spotLuz.style.left = `${x}%`;
   spotLuz.style.top = `${y}%`;
+
   const d = distanciaAPelota();
   const cerca = 1 - Math.min(d / 0.55, 1);
-  clima({ os: 0.34 - cerca * 0.18, ruidoOp: 0.16 - cerca * 0.1, brillo: 0.75 + cerca * 0.23, sat: 0.82 + cerca * 0.18, contraste: 1.12 - cerca * 0.07, color: "#cf6e52", colorOp: 0.22 - cerca * 0.07 });
+
+  clima({
+    os: 0.34 - cerca * 0.18,
+    ruidoOp: 0.16 - cerca * 0.1,
+    brillo: 0.75 + cerca * 0.23,
+    sat: 0.82 + cerca * 0.18,
+    contraste: 1.12 - cerca * 0.07,
+    color: "#cf6e52",
+    colorOp: 0.22 - cerca * 0.07
+  });
+
   intensidadLuciernagas(0.18 + cerca * 0.38);
-  if (d < 0.08) {
-    playOneShot("ballTap", 0.6);
-    vibrar(35);
-    setTexto("¡Toc!", "Lo logró a su manera", "La pelota sonó suave dentro del túnel.");
+
+  if (d < 0.09 && !pelotaLibre) {
+    empujarPelotaTunel();
   }
+
   audioTunel();
+}
+
+function empujarPelotaTunel() {
+  playOneShot("ballTap", 0.65);
+  vibrar(35);
+
+  pelota.classList.remove("saltarPelota");
+  void pelota.offsetWidth;
+  pelota.classList.add("saltarPelota");
+
+  pelotaTunelX += 0.10;
+  pelotaTunelY += (Math.random() - 0.5) * 0.08;
+
+  if (pelotaTunelY < 0.18 || pelotaTunelY > 0.88) {
+    playOneShot("bump", 0.55);
+    vibrar([30, 20, 40]);
+    setTexto("Ay…", "La pelota rebotó en el túnel", "Timo escuchó el eco y siguió intentando con cuidado.");
+    pelotaTunelY = Math.max(0.18, Math.min(0.88, pelotaTunelY));
+  } else {
+    setTexto("¡Pum!", "La pelota rebotó", "Timo la empujó suave y la pelota avanzó por el túnel.");
+  }
+
+  if (pelotaTunelX >= 1.05) {
+    pelotaLibre = true;
+    pelotaTunelX = 1.12;
+    pelotaTunelY = 0.55;
+
+    playOneShot("aplausos", 0.85);
+    playOneShot("softLaughs", 0.45);
+    vibrar([40, 40, 80]);
+
+    setTexto(
+      "¡Lo logró!",
+      "Sacaste la pelota del túnel",
+      "Timo encontró su manera de avanzar, empujar y salir."
+    );
+  }
+
+  actualizarTimoTunel();
 }
 
 function golpeTunel() {
