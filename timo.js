@@ -341,7 +341,7 @@ mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "13vw");
   setTexto(
     "",
     "Toca suave",
-    "Timo salió al mundo, pero todo se sintió demasiado fuerte."
+    "Timo sale al mundo, pero todo se siente demasiado intenso."
   );
 
   vibrar([30,80,30,120]);
@@ -357,7 +357,7 @@ function tocarPortada() {
   timo.classList.add("rodarFuera");
   luciernagasDibujo.style.left = "110%";
   spotLuz.style.left = "110%";
-  setTexto("¡Uy!", "Desliza despacio para que Timo vuelva", "Timo se hizo bolita para protegerse. Necesitó que el mundo bajara su intensidad.");
+  setTexto("¡Uy!", "Desliza suavemente tu dedo para que Timo vuelva", "Timo se hizo bolita para protegerse. Necesita que el mundo baje su intensidad.");
   setVol("stressHigh", 0.22);
   setVol("stressNoise", 0.18);
   setVol("rollingBall", 0.20);
@@ -410,7 +410,6 @@ function actualizarPortadaConProgreso(){
     setTexto(
       "",
       "Gracias por esperar",
-      "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar."
     );
 
     estadoPortada = "calma";
@@ -443,7 +442,7 @@ function regularPortada(delta) {
   if (p > 0.95 && estadoPortada !== "calma") {
     timo.classList.remove("volver", "temblar", "rodarFuera");
     mostrar(timo, ASSETS.portada.abierto, "36%", "59%", "19vw");
-    setTexto("", "Gracias por esperar", "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar.");
+    setTexto("", "Gracias por esperar");
     estadoPortada = "calma";
   }
   audioPortada();
@@ -462,7 +461,7 @@ function escenaRespira() {
   mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "clamp(90px,22vw,260px)");
   spotLuz.style.left = "24%";
   spotLuz.style.top = "62%";
-  setTexto("Respira", "Desliza lento con Timo", "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro.");
+  setTexto("Respira", "Desliza y respira lento con Timo", "El tronco es su apoyo. Con él, el mundo se siente más seguro.");
 }
 
 function moverRespira(delta) {
@@ -485,7 +484,7 @@ function moverRespira(delta) {
   clima({ os: 0.46 - p * 0.34, ruidoOp: 0.12 - p * 0.1, brillo: 0.75 + p * 0.28, sat: 0.78 + p * 0.22, contraste: 1.05 - p * 0.05, color: "#f7c47d", colorOp: 0.18 + p * 0.18 });
   intensidadLuciernagas(0.38 + p * 0.45);
   if (p > 0.88) {
-    setTexto("Respira", "Timo se asoma", "El miedo apareció, pero ya no ocupaba todo el espacio.");
+    setTexto("Timo se asoma", "El miedo ya no ocupaba todo el espacio.");
   }
   audioRespira();
 }
@@ -504,7 +503,7 @@ pelotaLibre = false;
   spotLuz.style.top = "68%";
 setTexto(
   "El túnel",
-  "Toca a Timo para empujar la pelota",
+  "Haz tap para que Timo saque la pelota",
 );  actualizarTimoTunel();
 }
 
@@ -586,10 +585,10 @@ function empujarPelotaTunel() {
   if (pelotaTunelY < 0.18 || pelotaTunelY > 0.88) {
     playOneShot("bump", 0.55);
     vibrar([30, 20, 40]);
-    setTexto("Ay…", "La pelota rebotó en el túnel", "Timo escuchó el eco y siguió intentando con cuidado.");
+    setTexto("Ay…", "La pelota rebotó en el túnel", "Timo escucha el eco y sigue intentando.");
     pelotaTunelY = Math.max(0.18, Math.min(0.88, pelotaTunelY));
   } else {
-    setTexto("¡Pum!", "La pelota rebotó", "Timo la empujó suave y la pelota avanzó por el túnel.");
+    setTexto("¡Pum!", "La pelota rebota", "Timo la empuja suave y la hace avanzar por el túnel.");
   }
 
   if (pelotaTunelX >= 1.05) {
@@ -604,7 +603,7 @@ function empujarPelotaTunel() {
     setTexto(
       "¡Lo logró!",
       "Sacaste la pelota del túnel",
-      "Timo encontró su manera de avanzar, empujar y salir."
+      "Timo tiene su manera de avanzar y salir."
     );
   }
 
@@ -665,7 +664,7 @@ function escenaFinal() {
   spotLuz.style.top = "55%";
   spotLuz.style.transform = "translate(-50%,-50%) scale(2.6)";
   intensidadLuciernagas(0.9);
-  setTexto("Todos jugamos", "Toca la pelota para lanzarla", "No todos nos movemos igual… pero todos merecemos jugar.");
+  setTexto("Juguemos todos", "Toca la pelota para lanzarla");
   audioFinal();
 }
 
@@ -698,7 +697,7 @@ function lanzarPelota() {
   setTexto(
     "¡Va para " + destino.nombre + "!",
     "Toca otra vez la pelota",
-    "La pelota vuelve a ti para seguir jugando con todos."
+    "La pelota vuelve para seguir jugando con todos."
   );
 
   setTimeout(() => {
