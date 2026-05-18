@@ -17,6 +17,9 @@ const ASSETS = {
   respira: {
     fondo: "assets/respira/fondo_color.png",
     timoTronco: "assets/respira/timo_tronco.png",
+    pajaro: "assets/respira/pajaro.png",
+    mariposa: "assets/respira/mariposa.png",
+    luciernagas: "assets/respira/luciernagas.png"
   },
   tunel: {
     fondo: "assets/tunel/fondo_color.png",
@@ -53,7 +56,7 @@ const SOUND_PATHS = {
   forest: "sounds/forest_night.mp3",
   butterfly: "sounds/butterfly_flutter.mp3",
   playBall: "sounds/play_ball.mp3",
-  softLaughs: "sounds/soft_laughs.mp3"
+  softLaughs: "sounds/soft_laughs.mp3",
   aplausos: "sounds/aplausos.mp3",
 };
 
@@ -104,7 +107,7 @@ let ultimaY = 0;
 const sonidos = {};
 Object.entries(SOUND_PATHS).forEach(([key, path]) => {
   sonidos[key] = new Audio(path);
-  sonidos[key].loop = !["bump", "ballTap", "playBall"].includes(key);
+  sonidos[key].loop = !["bump", "ballTap", "playBall", "aplausos"].includes(key);
   sonidos[key].volume = 0;
 });
 
@@ -359,63 +362,6 @@ function tocarPortada() {
   setVol("stressNoise", 0.18);
   setVol("rollingBall", 0.20);
 }
-function actualizarPortadaConProgreso(){
-  const p = progreso;
-
-  clima({
-    os:.94 - p*.86,
-    ruidoOp:.32 - p*.30,
-    brillo:.42 + p*.68,
-    sat:.62 + p*.35,
-    contraste:1.15 - p*.1,
-    color:"#ffb36b",
-    colorOp:.08 + p*.18
-  });
-
-  intensidadLuciernagas(.35 + p*.45);
-
-  spotLuz.style.left = `${18 + p*19}%`;
-  spotLuz.style.top = `${63 - p*3}%`;
-  spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p*.75})`;
-
-  luciernagasDibujo.style.left = `${18 + p*18}%`;
-  luciernagasDibujo.style.top = `${63 - p*4}%`;
-  luciernagasDibujo.style.width = `${13 + p*5}vw`;
-
-  [mono, conejo, pajaro, mariposa, pelota].forEach(el => {
-    el.style.opacity = .12 + p*.88;
-    el.style.filter = `brightness(${.35 + p*.75}) blur(${1 - p}px)`;
-  });
-
-  if(p > .22 && !timo.classList.contains("volver")){
-    timo.classList.remove("rodarFuera");
-    timo.classList.add("volver");
-  }
-
-  if(p > .95 && estadoPortada !== "calma"){
-    timo.classList.remove("volver", "temblar", "rodarFuera");
-    timo.src = ASSETS.portada.abierto;
-    timo.style.left = "36%";
-    timo.style.top = "59%";
-    timo.style.width = "19vw";
-    timo.style.transform = "translate(-50%,-50%)";
-
-  if(sonidoActivo){
-  audioPortada();
-}
-
-    setTexto(
-      "",
-      "Gracias por esperar",
-      "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar."
-    );
-
-    estadoPortada = "calma";
-  }
-
-  audioPortada();
-}
-
 function regularPortada(delta) {
   progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 2400));
   const p = progresoPortada;
@@ -446,22 +392,48 @@ function regularPortada(delta) {
   audioPortada();
 }
 
-function audioPortada(){
-  const p = progreso;
-  const estres = 1 - p;
-  const calma = p;
 
-  setVol("stressLow", .18 * estres);
-  setVol("stressHigh", .10 * estres);
-  setVol("stressNoise", .08 * estres);
-  setVol("heartbeatFast", .20 * estres);
-  setVol("tunnelEcho", .10 * estres);
-  setVol("rollingBall", .06 * estres);
+function escenaRespira() {
+  fondo.src = ASSETS.respira.fondo;
+  clima({
+    os: 0.46,
+    ruidoOp: 0.12,
+    brillo: 0.75,
+    sat: 0.78,
+    contraste: 1.05,
+    color: "#f0b67a",
+    colorOp: 0.18
+  });
 
-  setVol("heartbeatSoft", .08 * calma);
-  setVol("calmAir", .22 * calma);
-  setVol("fireflies", .16 + .20 * calma);
-  setVol("softChimes", .12 * calma);
+  crearLuciernagas(16, { x: 33, y: 62, radio: 18 });
+
+  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "clamp(150px,28vw,360px)");
+  timo.classList.add("balancito");
+
+  if (ASSETS.respira.mariposa) {
+    mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "clamp(38px,7vw,90px)");
+    mariposa.classList.add("flotar");
+  }
+
+  if (ASSETS.respira.pajaro) {
+    mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "clamp(48px,9vw,110px)");
+    pajaro.classList.add("flotar");
+  }
+
+  if (ASSETS.respira.luciernagas) {
+    mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "clamp(140px,24vw,340px)");
+  }
+
+  spotLuz.style.left = "24%";
+  spotLuz.style.top = "62%";
+
+  setTexto(
+    "Respira",
+    "Desliza lento con Timo",
+    "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro."
+  );
+
+  audioRespira();
 }
 
 function moverRespira(delta) {
