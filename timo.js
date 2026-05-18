@@ -107,7 +107,7 @@ let ultimaY = 0;
 const sonidos = {};
 Object.entries(SOUND_PATHS).forEach(([key, path]) => {
   sonidos[key] = new Audio(path);
-  sonidos[key].loop = !["bump", "ballTap", "playBall", "aplausos"].includes(key);
+  sonidos[key].loop = !["bump", "ballTap", "playBall"].includes(key);
   sonidos[key].volume = 0;
 });
 
@@ -316,7 +316,7 @@ function escenaPortada(){
 
   crearLuciernagas(12,{x:18,y:63,radio:10});
 
-mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "clamp(80px,16vw,220px)");
+mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "13vw");
   mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
   timo.classList.add("temblar");
   mostrar(conejo, ASSETS.portada.conejo, "73%","72%","clamp(60px,10vw,140px)");
@@ -362,6 +362,63 @@ function tocarPortada() {
   setVol("stressNoise", 0.18);
   setVol("rollingBall", 0.20);
 }
+function actualizarPortadaConProgreso(){
+  const p = progresoPortada;
+
+  clima({
+    os:.94 - p*.86,
+    ruidoOp:.32 - p*.30,
+    brillo:.42 + p*.68,
+    sat:.62 + p*.35,
+    contraste:1.15 - p*.1,
+    color:"#ffb36b",
+    colorOp:.08 + p*.18
+  });
+
+  intensidadLuciernagas(.35 + p*.45);
+
+  spotLuz.style.left = `${18 + p*19}%`;
+  spotLuz.style.top = `${63 - p*3}%`;
+  spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p*.75})`;
+
+  luciernagasDibujo.style.left = `${18 + p*18}%`;
+  luciernagasDibujo.style.top = `${63 - p*4}%`;
+  luciernagasDibujo.style.width = `${13 + p*5}vw`;
+
+  [conejo, pajaro, mariposa, pelota].forEach(el => {
+    el.style.opacity = .12 + p*.88;
+    el.style.filter = `brightness(${.35 + p*.75}) blur(${1 - p}px)`;
+  });
+
+  if(p > .22 && !timo.classList.contains("volver")){
+    timo.classList.remove("rodarFuera");
+    timo.classList.add("volver");
+  }
+
+  if(p > .95 && estadoPortada !== "calma"){
+    timo.classList.remove("volver", "temblar", "rodarFuera");
+    timo.src = ASSETS.portada.abierto;
+    timo.style.left = "36%";
+    timo.style.top = "59%";
+    timo.style.width = "19vw";
+    timo.style.transform = "translate(-50%,-50%)";
+
+  if(sonidoActivo){
+  audioPortada();
+}
+
+    setTexto(
+      "",
+      "Gracias por esperar",
+      "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar."
+    );
+
+    estadoPortada = "calma";
+  }
+
+  audioPortada();
+}
+
 function regularPortada(delta) {
   progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 2400));
   const p = progresoPortada;
@@ -392,48 +449,20 @@ function regularPortada(delta) {
   audioPortada();
 }
 
-
 function escenaRespira() {
   fondo.src = ASSETS.respira.fondo;
-  clima({
-    os: 0.46,
-    ruidoOp: 0.12,
-    brillo: 0.75,
-    sat: 0.78,
-    contraste: 1.05,
-    color: "#f0b67a",
-    colorOp: 0.18
-  });
-
+  clima({ os: 0.46, ruidoOp: 0.12, brillo: 0.75, sat: 0.78, contraste: 1.05, color: "#f0b67a", colorOp: 0.18 });
   crearLuciernagas(16, { x: 33, y: 62, radio: 18 });
-
-  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "clamp(150px,28vw,360px)");
+  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "clamp(130px,28vw,360px)");
   timo.classList.add("balancito");
-
-  if (ASSETS.respira.mariposa) {
-    mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "clamp(38px,7vw,90px)");
-    mariposa.classList.add("flotar");
-  }
-
-  if (ASSETS.respira.pajaro) {
-    mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "clamp(48px,9vw,110px)");
-    pajaro.classList.add("flotar");
-  }
-
-  if (ASSETS.respira.luciernagas) {
-    mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "clamp(140px,24vw,340px)");
-  }
-
+  mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "clamp(30px,6vw,70px)");
+  mariposa.classList.add("flotar");
+  mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "clamp(40px,8vw,90px)");
+  pajaro.classList.add("flotar");
+  mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "clamp(90px,22vw,260px)");
   spotLuz.style.left = "24%";
   spotLuz.style.top = "62%";
-
-  setTexto(
-    "Respira",
-    "Desliza lento con Timo",
-    "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro."
-  );
-
-  audioRespira();
+  setTexto("Respira", "Desliza lento con Timo", "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro.");
 }
 
 function moverRespira(delta) {
@@ -597,13 +626,7 @@ function escenaFinal() {
   fondo.src = ASSETS.final.fondo;
   clima({ os: 0.18, ruidoOp: 0, brillo: 0.78, sat: 1.05, contraste: 1.05, color: "#16264d", colorOp: 0.35 });
   crearLuciernagas(34, { x: 50, y: 55, radio: 45 });
-mostrar(
- luciernagasDibujo,
- ASSETS.final.luciernagas,
- "50%",
- "56%",
- "clamp(120px,24vw,260px)"
-)
+  mostrar(luciernagasDibujo, ASSETS.final.luciernagas, "50%", "56%", "70vw");
   mostrar(timo, ASSETS.final.timo, "30%", "66%", "15vw");
   mostrar(mono, ASSETS.final.mono, "68%", "38%", "18vw");
   mono.classList.add("flotar");
@@ -613,8 +636,7 @@ mostrar(
   pajaro.classList.add("flotar");
   mostrar(mariposa, ASSETS.final.mariposa, "46%", "50%", "7vw");
   mariposa.classList.add("flotar");
-  mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "8vw");
-escenaFinal()
+  mostrar(pelota, ASSETS.final.pelota, "58%", "72%", "clamp(45px,8vw,95px)");
   turnoPelotaFinal = 0;
   pelota.style.transition = "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
   pelota.classList.add("pelotaInteractiva");
@@ -627,17 +649,6 @@ escenaFinal()
 }
 
 let turnoPelotaFinal = 0;
-
-const destinosPelotaFinal = [
-  { nombre: "Timo", x: "30%", y: "66%" },
-  { nombre: "Conejo", x: "18%", y: "72%" },
-  { nombre: "Pájaro", x: "54%", y: "24%" },
-  { nombre: "Mariposa", x: "46%", y: "50%" },
-  { nombre: "Mono", x: "68%", y: "38%" }
-];
-
-let turnoPelotaFinal = 0;
-
 const destinosPelotaFinal = [
   { nombre: "Timo", x: "30%", y: "66%" },
   { nombre: "Conejo", x: "18%", y: "72%" },
@@ -651,12 +662,9 @@ function lanzarPelota() {
 
   const origen = { x: "58%", y: "72%" };
   const destino = destinosPelotaFinal[turnoPelotaFinal];
-
   turnoPelotaFinal = (turnoPelotaFinal + 1) % destinosPelotaFinal.length;
 
-  pelota.style.transition =
-    "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
-
+  pelota.style.transition = "left .55s ease-out, top .55s ease-out, transform .55s ease-out";
   pelota.style.left = destino.x;
   pelota.style.top = destino.y;
   pelota.style.transform = "translate(-50%,-50%) scale(1.15) rotate(180deg)";
@@ -671,13 +679,6 @@ function lanzarPelota() {
     "Toca otra vez la pelota",
     "La pelota vuelve a ti para seguir jugando con todos."
   );
-
-  setTimeout(() => {
-    pelota.style.left = origen.x;
-    pelota.style.top = origen.y;
-    pelota.style.transform = "translate(-50%,-50%) scale(1) rotate(0deg)";
-  }, 650);
-}
 
   setTimeout(() => {
     pelota.style.left = origen.x;
