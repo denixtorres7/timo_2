@@ -111,7 +111,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Ari
 .pelotaVuelo{animation:pelotaVuelo 2.6s infinite ease-in-out}
 @keyframes pelotaVuelo{0%,100%{transform:translate(-50%,-50%) translateY(0) rotate(0)}50%{transform:translate(-50%,-50%) translateY(-26vh) rotate(180deg)}}
 .modoSensible #flash{display:none}.modoSensible #ruido{opacity:.08!important}.modoSensible #oscuridad{transition:opacity 1.8s ease}.modoSensible .temblar{animation-duration:.22s}
-@media (orientation:portrait){#menu{gap:7px;bottom:12px}#menu button{width:44px;height:44px;font-size:20px}#texto{top:4%;width:88%}#cuento{font-size:13px;max-height:86px;overflow:auto}
+@media (orientation:portrait){#menu{gap:7px;bottom:12px}#menu button{width:44px;height:44px;font-size:20px}#texto{top:4%;width:88%}#cuento{font-size:13px;max-height:86px;overflow:auto}}
 
 #app{
   touch-action:none;
@@ -151,11 +151,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Ari
   100%{transform:translate(-2px,2px);}
 }
 
-.personaje{
-   max-width:22vw;
-   max-height:22vh;
-   object-fit:contain;
-}
+
 /* MODO PRUEBA COMPUTADOR */
 
 .vibracionVisual{
