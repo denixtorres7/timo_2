@@ -502,8 +502,10 @@ pelotaLibre = false;
   pelota.classList.add("flotar");
   spotLuz.style.left = "13%";
   spotLuz.style.top = "68%";
-  setTexto("El túnel", "Inclina el celular o usa flechas para avanzar", "Lo que parecía un obstáculo, era justo el camino que él entendía mejor.");
-  actualizarTimoTunel();
+setTexto(
+  "El túnel",
+  "Toca a Timo para empujar la pelota",
+);  actualizarTimoTunel();
 }
 
 function distanciaAPelota() {
@@ -549,6 +551,25 @@ function actualizarTimoTunel() {
   }
 
   audioTunel();
+}
+
+function avanzarTimoTunelPorTap() {
+  if (escenaActual !== "tunel") return;
+
+  if (pelotaLibre) return;
+
+  const dx = pelotaTunelX - tunelX;
+  const dy = pelotaTunelY - tunelY;
+  const distancia = Math.sqrt(dx * dx + dy * dy);
+
+  if (distancia > 0.025) {
+    tunelX += dx * 0.18;
+    tunelY += dy * 0.18;
+    actualizarTimoTunel();
+    return;
+  }
+
+  empujarPelotaTunel();
 }
 
 function empujarPelotaTunel() {
@@ -692,6 +713,10 @@ function manejarTapGlobal(e) {
   if (e.target === pelota && escenaActual === "final") return;
   if (!sonidoActivo) encenderSonido();
   if (escenaActual === "portada" && estadoPortada === "oscuro") tocarPortada();
+  if (escenaActual === "tunel") {
+  avanzarTimoTunelPorTap();
+  return;
+}
   if (escenaActual === "final") {
     intensidadLuciernagas(1);
     setTimeout(() => intensidadLuciernagas(0.9), 500);
@@ -741,10 +766,6 @@ window.addEventListener("wheel", (e) => {
 });
 
 window.addEventListener("click", manejarTapGlobal);
-
-window.addEventListener("deviceorientation", (e) => {
-  if (escenaActual === "tunel") moverTunelPorInclinacion(e.gamma || 0, e.beta || 45);
-});
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "1") cargarEscena("portada");
