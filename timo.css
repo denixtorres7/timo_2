@@ -1,7 +1,14 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif;touch-action:none;user-select:none}
 #app{position:relative;width:100vw;height:100vh;overflow:hidden;background:#000}
-#fondo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;transition:filter 1s ease,opacity 1s ease}
+#fondo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
 #cieloColor{position:absolute;inset:0;z-index:1;pointer-events:none;mix-blend-mode:multiply;opacity:.35;transition:background 1.5s ease,opacity 1.5s ease}
 #oscuridad{position:absolute;inset:0;background:#000;opacity:.92;z-index:2;pointer-events:none;transition:opacity 1s ease}
 #spotLuz{position:absolute;width:230px;height:230px;left:18%;top:63%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,238,150,.85) 0%,rgba(255,221,100,.28) 28%,rgba(255,221,100,.08) 48%,rgba(0,0,0,0) 72%);mix-blend-mode:screen;filter:blur(18px);z-index:4;pointer-events:none;transition:left 1.2s ease,top 1.2s ease,opacity .8s ease,transform .8s ease;width:clamp(150px,24vw,320px);height:clamp(150px,24vw,320px)}
@@ -31,8 +38,40 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Ari
 @keyframes temblar{0%{transform:translate(-50%,-50%) rotate(-2deg)}50%{transform:translate(calc(-50% + 5px),calc(-50% - 3px)) rotate(2deg)}100%{transform:translate(calc(-50% - 4px),calc(-50% + 3px)) rotate(-1deg)}}
 .rodarFuera{animation:rodarFuera 1.25s forwards ease-in}
 @keyframes rodarFuera{from{left:18%;transform:translate(-50%,-50%) rotate(0)}to{left:115%;transform:translate(-50%,-50%) rotate(760deg)}}
-.volver{animation:volver 1.5s forwards ease-out}
-@keyframes volver{from{left:-20%;transform:translate(-50%,-50%) rotate(-720deg)}to{left:35%;transform:translate(-50%,-50%) rotate(0)}}
+.volver{
+  animation: desenrollarTimo 3.8s ease-out forwards;
+}
+
+@keyframes desenrollarTimo{
+
+  0%{
+    transform:
+      translate(-50%,-50%)
+      rotate(-540deg)
+      scale(.72);
+  }
+
+  40%{
+    transform:
+      translate(-50%,-50%)
+      rotate(-260deg)
+      scale(.82);
+  }
+
+  70%{
+    transform:
+      translate(-50%,-50%)
+      rotate(-80deg)
+      scale(.94);
+  }
+
+  100%{
+    transform:
+      translate(-50%,-50%)
+      rotate(0deg)
+      scale(1);
+  }
+}
 .balancito{animation:balancito 3.2s infinite ease-in-out}
 @keyframes balancito{0%,100%{transform:translate(-50%,-50%) rotate(-1.5deg)}50%{transform:translate(-50%,-50%) rotate(1.5deg)}}
 .respirar{animation:respirar 3.8s infinite ease-in-out}
@@ -80,6 +119,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Ari
   0%{transform:translate(0,0);}
   50%{transform:translate(3px,-2px);}
   100%{transform:translate(-2px,2px);}
+}
+
+.personaje{
+   max-width:22vw;
+   max-height:22vh;
+   object-fit:contain;
 }
 /* MODO PRUEBA COMPUTADOR */
 

@@ -9,7 +9,6 @@ const ASSETS = {
   bolita: "assets/portada/timo_bolita.png",
   abierto: "assets/portada/timo_open.png",
   luciernagas: "assets/portada/luciernagas.png",
-  mono: "assets/portada/mono.png",
   conejo: "assets/portada/conejo.png",
   pajaro: "assets/portada/pajaro.png",
   mariposa: "assets/portada/mariposa.png",
@@ -310,24 +309,19 @@ function escenaPortada(){
 
   crearLuciernagas(12,{x:18,y:63,radio:10});
 
-  mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "24vw");
-
+mostrar(luciernagasDibujo, ASSETS.portada.luciernagas, "18%", "63%", "13vw");
   mostrar(timo, ASSETS.portada.bolita, "18%", "63%", "15vw");
   timo.classList.add("temblar");
+  mostrar(conejo, ASSETS.portada.conejo, "73%","72%","clamp(60px,10vw,140px)");
+  mostrar(pajaro, ASSETS.portada.pajaro, "48%","24%","clamp(40px,8vw,90px)");
+  mostrar(mariposa, ASSETS.portada.mariposa, "52%","52%","clamp(30px,6vw,70px)");
+  mostrar(pelota, ASSETS.portada.pelota, "58%","72%","clamp(45px,8vw,100px)");
 
-  mostrar(mono, ASSETS.portada.mono, "69%", "38%", "18vw");
-  mostrar(conejo, ASSETS.portada.conejo, "73%", "72%", "12vw");
-  mostrar(pajaro, ASSETS.portada.pajaro, "48%", "24%", "9vw");
-  mostrar(mariposa, ASSETS.portada.mariposa, "52%", "52%", "7vw");
-  mostrar(pelota, ASSETS.portada.pelota, "58%", "72%", "8vw");
-
-  mono.style.opacity = ".12";
   conejo.style.opacity = ".12";
   pajaro.style.opacity = ".14";
   mariposa.style.opacity = ".16";
   pelota.style.opacity = ".12";
 
-  mono.style.filter = "brightness(.35) blur(1px)";
   conejo.style.filter = "brightness(.35) blur(1px)";
   pajaro.style.filter = "brightness(.4) blur(1px)";
   mariposa.style.filter = "brightness(.45) blur(1px)";
@@ -357,15 +351,71 @@ function tocarPortada() {
   luciernagasDibujo.style.left = "110%";
   spotLuz.style.left = "110%";
   setTexto("¡Uy!", "Desliza despacio para que Timo vuelva", "Timo se hizo bolita para protegerse. Necesitó que el mundo bajara su intensidad.");
-  setVol("stressHigh", 0.7);
-  setVol("stressNoise", 0.6);
-  setVol("rollingBall", 0.62);
+  setVol("stressHigh", 0.22);
+  setVol("stressNoise", 0.18);
+  setVol("rollingBall", 0.20);
+}
+function actualizarPortadaConProgreso(){
+  const p = progreso;
+
+  clima({
+    os:.94 - p*.86,
+    ruidoOp:.32 - p*.30,
+    brillo:.42 + p*.68,
+    sat:.62 + p*.35,
+    contraste:1.15 - p*.1,
+    color:"#ffb36b",
+    colorOp:.08 + p*.18
+  });
+
+  intensidadLuciernagas(.35 + p*.45);
+
+  spotLuz.style.left = `${18 + p*19}%`;
+  spotLuz.style.top = `${63 - p*3}%`;
+  spotLuz.style.transform = `translate(-50%,-50%) scale(${1 + p*.75})`;
+
+  luciernagasDibujo.style.left = `${18 + p*18}%`;
+  luciernagasDibujo.style.top = `${63 - p*4}%`;
+  luciernagasDibujo.style.width = `${13 + p*5}vw`;
+
+  [mono, conejo, pajaro, mariposa, pelota].forEach(el => {
+    el.style.opacity = .12 + p*.88;
+    el.style.filter = `brightness(${.35 + p*.75}) blur(${1 - p}px)`;
+  });
+
+  if(p > .22 && !timo.classList.contains("volver")){
+    timo.classList.remove("rodarFuera");
+    timo.classList.add("volver");
+  }
+
+  if(p > .95 && estadoPortada !== "calma"){
+    timo.classList.remove("volver", "temblar", "rodarFuera");
+    timo.src = ASSETS.portada.abierto;
+    timo.style.left = "36%";
+    timo.style.top = "59%";
+    timo.style.width = "19vw";
+    timo.style.transform = "translate(-50%,-50%)";
+
+  if(sonidoActivo){
+  audioPortada();
+}
+
+    setTexto(
+      "",
+      "Gracias por esperar",
+      "Cuando el entorno bajó su intensidad, Timo pudo volver a mirar."
+    );
+
+    estadoPortada = "calma";
+  }
+
+  audioPortada();
 }
 
 function regularPortada(delta) {
-  progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 900));
+  progresoPortada = Math.max(0, Math.min(1, progresoPortada + delta / 2400));
   const p = progresoPortada;
-  [mono, conejo, pajaro, mariposa, pelota].forEach(el => {
+  [conejo, pajaro, mariposa, pelota].forEach(el => {
   el.style.opacity = .12 + p * .88;
   el.style.filter = `brightness(${.35 + p * .75}) blur(${1 - p}px)`;
 });
@@ -378,7 +428,7 @@ function regularPortada(delta) {
   luciernagasDibujo.style.top = `${63 - p * 4}%`;
   luciernagasDibujo.style.width = `${24 + p * 7}vw`;
 
-  if (p > 0.22 && !timo.classList.contains("volver")) {
+  if (p > 0.42 && !timo.classList.contains("volver")) {
     timo.classList.remove("rodarFuera");
     timo.classList.add("volver");
   }
@@ -392,20 +442,22 @@ function regularPortada(delta) {
   audioPortada();
 }
 
-function escenaRespira() {
-  fondo.src = ASSETS.respira.fondo;
-  clima({ os: 0.46, ruidoOp: 0.12, brillo: 0.75, sat: 0.78, contraste: 1.05, color: "#f0b67a", colorOp: 0.18 });
-  crearLuciernagas(16, { x: 33, y: 62, radio: 18 });
-  mostrar(timo, ASSETS.respira.timoTronco, "24%", "62%", "28vw");
-  timo.classList.add("balancito");
-  mostrar(mariposa, ASSETS.respira.mariposa, "18%", "40%", "7vw");
-  mariposa.classList.add("flotar");
-  mostrar(pajaro, ASSETS.respira.pajaro, "12%", "28%", "9vw");
-  pajaro.classList.add("flotar");
-  mostrar(luciernagasDibujo, ASSETS.respira.luciernagas, "25%", "58%", "24vw");
-  spotLuz.style.left = "24%";
-  spotLuz.style.top = "62%";
-  setTexto("Respira", "Desliza lento con Timo", "El tronco era su apoyo. Con él, el mundo empezó a sentirse más seguro.");
+function audioPortada(){
+  const p = progreso;
+  const estres = 1 - p;
+  const calma = p;
+
+  setVol("stressLow", .18 * estres);
+  setVol("stressHigh", .10 * estres);
+  setVol("stressNoise", .08 * estres);
+  setVol("heartbeatFast", .20 * estres);
+  setVol("tunnelEcho", .10 * estres);
+  setVol("rollingBall", .06 * estres);
+
+  setVol("heartbeatSoft", .08 * calma);
+  setVol("calmAir", .22 * calma);
+  setVol("fireflies", .16 + .20 * calma);
+  setVol("softChimes", .12 * calma);
 }
 
 function moverRespira(delta) {
